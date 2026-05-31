@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Naval Intelligence Officer PQS — Study Guide</title>
+<style>
+  :root{
+    --navy:#0a1931; --navy2:#102a4c; --steel:#1c3a5e; --gold:#c8a24a;
+    --gold2:#e0bf6a; --ink:#0b1220; --paper:#f4f6fb; --card:#ffffff;
+    --muted:#6b7a90; --line:#d9e0ec; --good:#2e7d4f; --bad:#b23b3b;
+    --accent:#3a6ea5; --shadow:0 4px 18px rgba(10,25,49,.10);
+  }
+  [data-theme="dark"]{
+    --paper:#0b1626; --card:#10203a; --ink:#e8eef7; --line:#22344f;
+    --muted:#90a2bd; --shadow:0 4px 22px rgba(0,0,0,.45); --navy:#06101f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--paper); color:var(--ink); line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  header.app{
+    background:linear-gradient(135deg,var(--navy),var(--steel));
+    color:#fff;padding:18px 20px;border-bottom:3px solid var(--gold);
+  }
+  .hwrap{max-width:1080px;margin:0 auto;display:flex;align-items:center;
+    justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:14px}
+  .crest{width:46px;height:46px;border-radius:50%;flex:0 0 auto;
+    background:radial-gradient(circle at 35% 30%,var(--gold2),var(--gold) 60%,#8c6f2a);
+    display:flex;align-items:center;justify-content:center;font-weight:800;
+    color:var(--navy);font-size:18px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.25)}
+  .brand h1{font-size:19px;margin:0;line-height:1.15}
+  .brand .sub{font-size:12px;color:#bcd0ea;margin-top:2px}
+  .hmeta{font-size:11px;color:#bcd0ea;text-align:right}
+  .theme-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+    color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
+  .theme-btn:hover{background:rgba(255,255,255,.2)}
+
+  /* tabs */
+  nav.tabs{background:var(--navy2);position:sticky;top:0;z-index:40;
+    border-bottom:1px solid rgba(255,255,255,.08)}
+  .tabwrap{max-width:1080px;margin:0 auto;display:flex;gap:2px;overflow-x:auto}
+  .tab{flex:1;min-width:120px;background:transparent;border:none;color:#a9c0dc;
+    padding:13px 10px;font-size:14px;font-weight:600;cursor:pointer;
+    border-bottom:3px solid transparent;white-space:nowrap;transition:.15s}
+  .tab:hover{color:#fff;background:rgba(255,255,255,.05)}
+  .tab.active{color:#fff;border-bottom-color:var(--gold)}
+  .tab .ico{display:block;font-size:18px;margin-bottom:2px}
+
+  main{max-width:1080px;margin:0 auto;padding:22px 18px 80px}
+  .panel{display:none;animation:fade .25s ease}
+  .panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* controls */
+  .controls{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:14px;margin-bottom:18px;box-shadow:var(--shadow)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  label.fld{font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;
+    text-transform:uppercase;letter-spacing:.05em}
+  input[type=text],input[type=search],select{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;
+    background:var(--paper);color:var(--ink);font-size:15px;outline:none}
+  input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(58,110,165,.15)}
+  .btn{background:var(--navy);color:#fff;border:none;border-radius:9px;padding:10px 16px;
+    font-size:14px;font-weight:600;cursor:pointer;transition:.15s}
+  .btn:hover{background:var(--steel)}
+  .btn.gold{background:var(--gold);color:var(--navy)}
+  .btn.gold:hover{background:var(--gold2)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--accent)}
+  .btn.sm{padding:7px 11px;font-size:13px}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+
+  /* module chips multiselect */
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{border:1px solid var(--line);background:var(--paper);color:var(--ink);
+    border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer;user-select:none;
+    font-weight:600;transition:.12s}
+  .chip:hover{border-color:var(--accent)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip.allnone{border-style:dashed;color:var(--muted)}
+
+  /* search results */
+  .count{font-size:13px;color:var(--muted);margin:6px 2px 14px}
+  .qa{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow)}
+  .qa .modtag{display:inline-block;font-size:10.5px;font-weight:700;color:#fff;
+    background:var(--accent);padding:2px 8px;border-radius:6px;letter-spacing:.04em;
+    margin-bottom:8px;text-transform:uppercase}
+  .qa .topic{font-size:11px;color:var(--muted);margin-left:6px;font-weight:600}
+  .qa .q{font-weight:700;font-size:15.5px;margin:0 0 8px}
+  .qa .a{font-size:14.5px;color:var(--ink)}
+  .qa .a b{color:var(--accent)}
+  mark{background:var(--gold2);color:var(--ink);border-radius:3px;padding:0 2px}
+  .empty{text-align:center;color:var(--muted);padding:50px 20px;font-size:15px}
+
+  /* flashcards */
+  .fc-stage{perspective:1600px;margin:10px auto 16px;max-width:680px}
+  .flashcard{position:relative;width:100%;min-height:300px;cursor:pointer;
+    transition:transform .55s;transform-style:preserve-3d}
+  .flashcard.flipped{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;
+    padding:30px;display:flex;flex-direction:column;justify-content:center;
+    box-shadow:var(--shadow);border:1px solid var(--line)}
+  .face.front{background:linear-gradient(150deg,var(--navy),var(--steel));color:#fff}
+  .face.back{background:var(--card);color:var(--ink);transform:rotateY(180deg);overflow:auto}
+  .face .lbl{font-size:11px;letter-spacing:.15em;text-transform:uppercase;opacity:.7;
+    margin-bottom:14px;font-weight:700}
+  .face.front .lbl{color:var(--gold2)}
+  .face.back .lbl{color:var(--accent)}
+  .face .txt{font-size:19px;font-weight:600;line-height:1.45}
+  .face.back .txt{font-size:16px;font-weight:400}
+  .face.back .txt b{color:var(--accent)}
+  .flip-hint{text-align:center;font-size:12px;color:var(--muted);margin-bottom:14px}
+  .fc-nav{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}
+  .fc-progress{font-size:13px;color:var(--muted);min-width:90px;text-align:center}
+  .fc-mark{display:flex;gap:10px;justify-content:center;margin-top:14px}
+  .pill{font-size:12px;padding:4px 10px;border-radius:999px;font-weight:700}
+  .pill.known{background:rgba(46,125,79,.15);color:var(--good)}
+  .pill.review{background:rgba(178,59,59,.13);color:var(--bad)}
+  .progbar{height:7px;background:var(--line);border-radius:99px;overflow:hidden;margin:4px 0 0}
+  .progbar > i{display:block;height:100%;background:var(--gold);transition:width .3s}
+
+  /* board quiz */
+  .board-setup .row{margin-bottom:14px}
+  .qcard{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:22px;box-shadow:var(--shadow)}
+  .qcard .meta{display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:14px;flex-wrap:wrap;gap:8px}
+  .qcard .qn{font-size:13px;color:var(--muted);font-weight:600}
+  .timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:14px;
+    background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:4px 10px}
+  .timer.warn{color:var(--bad);border-color:var(--bad)}
+  .board-q{font-size:19px;font-weight:700;line-height:1.4;margin:6px 0 18px}
+  .answer-box{background:var(--paper);border:1px dashed var(--line);border-radius:10px;
+    padding:16px;font-size:15px;margin-bottom:16px;animation:fade .3s}
+  .answer-box .lbl{font-size:11px;letter-spacing:.1em;color:var(--accent);font-weight:700;
+    text-transform:uppercase;margin-bottom:8px}
+  .answer-box b{color:var(--accent)}
+  .grade-row{display:flex;gap:10px;flex-wrap:wrap}
+  .btn.miss{background:var(--bad)} .btn.miss:hover{filter:brightness(1.1)}
+  .btn.got{background:var(--good)} .btn.got:hover{filter:brightness(1.1)}
+  .scorebar{display:flex;gap:16px;font-size:13px;font-weight:600;margin-bottom:14px;flex-wrap:wrap}
+  .scorebar .s-got{color:var(--good)} .scorebar .s-miss{color:var(--bad)}
+  .results{text-align:center;padding:14px}
+  .results .big{font-size:54px;font-weight:800;color:var(--navy);line-height:1}
+  [data-theme=dark] .results .big{color:var(--gold2)}
+  .results .grade{font-size:18px;font-weight:700;margin:6px 0 4px}
+  .results .msg{color:var(--muted);margin-bottom:20px}
+  .missed-list{text-align:left;margin-top:18px}
+  .missed-list h4{margin:0 0 8px;font-size:14px}
+
+  /* browse */
+  .acc{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow)}
+  .acc-h{display:flex;justify-content:space-between;align-items:center;cursor:pointer;
+    padding:14px 18px;font-weight:700;font-size:15px;user-select:none}
+  .acc-h:hover{background:var(--paper)}
+  .acc-h .n{font-size:12px;color:var(--muted);font-weight:600}
+  .acc-h .arrow{transition:.2s;color:var(--accent)}
+  .acc.open .arrow{transform:rotate(90deg)}
+  .acc-body{display:none;padding:0 18px 10px}
+  .acc.open .acc-body{display:block;animation:fade .2s}
+  .acc-body .qa{box-shadow:none;border-color:var(--line)}
+
+  .hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+  footer{max-width:1080px;margin:0 auto;padding:0 18px 40px;color:var(--muted);font-size:12px;
+    text-align:center;line-height:1.7}
+  .kbd{font-family:monospace;background:var(--paper);border:1px solid var(--line);
+    border-radius:5px;padding:1px 6px;font-size:12px}
+  @media(max-width:560px){
+    .tab .ico{font-size:16px}.tab{font-size:12px;min-width:88px;padding:10px 6px}
+    .brand h1{font-size:16px}.face .txt{font-size:17px}.board-q{font-size:17px}
+  }
+</style>
+</head>
+<body>
+<header class="app">
+  <div class="hwrap">
+    <div class="brand">
+      <div class="crest">NI</div>
+      <div>
+        <h1>Naval Intelligence Officer PQS</h1>
+        <div class="sub">Consolidated Study Guide &middot; NAVEDTRA 43547-A &middot; Modules 101–118</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="hmeta">ICOD 09 APR 2026<br><span id="cardCount"></span> study items</div>
+      <button class="theme-btn" id="themeBtn" title="Toggle dark mode">🌙 Dark</button>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabwrap">
+    <button class="tab active" data-tab="search"><span class="ico">🔍</span>Search Q&amp;A</button>
+    <button class="tab" data-tab="cards"><span class="ico">🃏</span>Flashcards</button>
+    <button class="tab" data-tab="board"><span class="ico">⚓</span>Board Quiz</button>
+    <button class="tab" data-tab="browse"><span class="ico">📚</span>Browse Topics</button>
+  </div>
+</nav>
+
+<main>
+  <!-- ================= SEARCH ================= -->
+  <section class="panel active" id="panel-search">
+    <div class="controls">
+      <label class="fld">Query the study guide</label>
+      <input type="search" id="searchInput" placeholder="Search e.g. &quot;EMCON&quot;, &quot;COCOM&quot;, &quot;F3EAD&quot;, &quot;5th fleet&quot;, &quot;ICD 203&quot;…" autocomplete="off" />
+      <div class="row" style="margin-top:12px">
+        <div style="flex:1;min-width:200px">
+          <label class="fld">Filter by module</label>
+          <div class="chips" id="searchChips"></div>
+        </div>
+      </div>
+    </div>
+    <div class="count" id="searchCount"></div>
+    <div id="searchResults"></div>
+  </section>
+
+  <!-- ================= FLASHCARDS ================= -->
+  <section class="panel" id="panel-cards">
+    <div class="controls">
+      <div class="row">
+        <div style="flex:1;min-width:200px">
+          <label class="fld">Deck — choose modules</label>
+          <div class="chips" id="cardChips"></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn gold sm" id="fcShuffle">🔀 Shuffle</button>
+        <button class="btn ghost sm" id="fcReviewOnly">★ Review pile only</button>
+        <button class="btn ghost sm" id="fcReset">↺ Reset progress</button>
+        <span class="hint" id="fcDeckInfo"></span>
+      </div>
+    </div>
+    <div id="fcArea">
+      <div class="flip-hint">Click the card (or press <span class="kbd">Space</span>) to flip &middot; <span class="kbd">←</span>/<span class="kbd">→</span> to navigate</div>
+      <div class="fc-stage">
+        <div class="flashcard" id="flashcard">
+          <div class="face front">
+            <div class="lbl" id="fcFrontLbl">Question</div>
+            <div class="txt" id="fcFront">—</div>
+          </div>
+          <div class="face back">
+            <div class="lbl">Answer</div>
+            <div class="txt" id="fcBack">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="progbar"><i id="fcBar" style="width:0%"></i></div>
+      <div class="fc-nav" style="margin-top:14px">
+        <button class="btn ghost" id="fcPrev">← Prev</button>
+        <span class="fc-progress" id="fcProg">0 / 0</span>
+        <button class="btn ghost" id="fcNext">Next →</button>
+      </div>
+      <div class="fc-mark">
+        <button class="btn miss sm" id="fcMarkReview">Needs review</button>
+        <button class="btn got sm" id="fcMarkKnown">Got it ✓</button>
+      </div>
+      <div style="text-align:center;margin-top:10px">
+        <span class="pill known" id="fcKnownCount">0 known</span>
+        <span class="pill review" id="fcReviewCount">0 to review</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BOARD QUIZ ================= -->
+  <section class="panel" id="panel-board">
+    <div id="boardSetup" class="board-setup">
+      <div class="controls">
+        <p style="margin:0 0 4px;font-weight:700">⚓ Navy Board-Style Examination</p>
+        <p class="hint" style="margin-top:0">Oral-board format: a question is posed, you recall the answer aloud, then reveal it and grade yourself honestly — just like a real qual board. Missed questions go into a review pile.</p>
+        <div class="row">
+          <div style="flex:1;min-width:200px">
+            <label class="fld">Topics to focus on</label>
+            <div class="chips" id="boardChips"></div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:14px">
+          <div style="min-width:150px;flex:1">
+            <label class="fld"># of questions</label>
+            <select id="boardCount">
+              <option value="10">10 (quick)</option>
+              <option value="20" selected>20 (standard)</option>
+              <option value="35">35 (long board)</option>
+              <option value="0">All selected</option>
+            </select>
+          </div>
+          <div style="min-width:150px;flex:1">
+            <label class="fld">Per-question timer</label>
+            <select id="boardTimer">
+              <option value="0">Off</option>
+              <option value="30">30 sec</option>
+              <option value="60" selected>60 sec</option>
+              <option value="90">90 sec</option>
+            </select>
+          </div>
+          <div style="min-width:150px;flex:1">
+            <label class="fld">Source pool</label>
+            <select id="boardPool">
+              <option value="all">All questions</option>
+              <option value="review">My review pile only</option>
+            </select>
+          </div>
+        </div>
+        <div class="row" style="margin-top:16px">
+          <button class="btn gold" id="boardStart">Convene the board →</button>
+          <span class="hint" id="boardPoolInfo"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="boardLive" style="display:none">
+      <div class="scorebar">
+        <span class="s-got" id="bGot">✓ 0 correct</span>
+        <span class="s-miss" id="bMiss">✗ 0 missed</span>
+        <span style="color:var(--muted)" id="bRemain"></span>
+        <button class="btn ghost sm" id="boardQuit" style="margin-left:auto">End board</button>
+      </div>
+      <div class="qcard">
+        <div class="meta">
+          <span class="qn" id="bQn">Question 1</span>
+          <span class="timer" id="bTimer" style="display:none">60</span>
+        </div>
+        <div class="modtag" id="bModtag" style="display:inline-block;font-size:10.5px;font-weight:700;color:#fff;background:var(--accent);padding:2px 8px;border-radius:6px;margin-bottom:8px"></div>
+        <div class="board-q" id="bQuestion">—</div>
+        <div id="bAnswerWrap"></div>
+        <div id="bActions">
+          <button class="btn gold" id="bReveal">Reveal answer</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="boardResults" style="display:none">
+      <div class="qcard results">
+        <div class="big" id="rPct">0%</div>
+        <div class="grade" id="rGrade"></div>
+        <div class="msg" id="rMsg"></div>
+        <button class="btn gold" id="rAgain">New board</button>
+        <button class="btn ghost" id="rReviewMissed" style="margin-left:8px">Drill missed only</button>
+        <div class="missed-list" id="rMissedList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BROWSE ================= -->
+  <section class="panel" id="panel-browse">
+    <div class="controls">
+      <div class="row">
+        <input type="search" id="browseFilter" placeholder="Filter topics…" style="flex:1;min-width:200px" />
+        <button class="btn ghost sm" id="expandAll">Expand all</button>
+        <button class="btn ghost sm" id="collapseAll">Collapse all</button>
+      </div>
+    </div>
+    <div id="browseList"></div>
+  </section>
+</main>
+
+<footer>
+  Built from the consolidated Naval Intelligence Officer PQS (NAVEDTRA 43547-A, Modules 101–118).<br>
+  Study aid only — refer to original modules &amp; classified supplements for authoritative content. Progress is saved in your browser.
+</footer>
+
+<script>
+/* ============================================================
+   QUESTION BANK
+   Each item: { m:moduleNum, mt:moduleTitle, topic, q, a }
+   ============================================================ */
+const DATA = [
+/* ---------- 101 Safety / Security ---------- */
+{m:"101",mt:"Safety & Security Fundamentals",topic:"ORM",q:"What is Operational Risk Management (ORM) and how often does it apply?",a:"A decision-making tool used at all levels to <b>identify, assess, and manage risk</b>, reducing potential for loss and improving mission success. It is a standardized process that applies <b>24/7/365</b>, on- and off-duty. The level of risk the Navy accepts is higher in war than peace, but the process is identical."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"ORM",q:"List the 5 steps of the ORM process.",a:"1) <b>Identify Hazards</b>, 2) <b>Assess Hazards</b> (severity × probability → RAC), 3) <b>Make Risk Decisions</b>, 4) <b>Implement Controls</b>, 5) <b>Supervise</b> (monitor, review, feedback)."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"ORM",q:"How is a Risk Assessment Code (RAC) derived?",a:"From <b>severity (I–IV) × probability (A–D)</b>. The RAC drives whether a risk is acceptable and at what command level it must be accepted."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"Classification",q:"Define the three collateral classification levels and the damage each causes.",a:"<b>TOP SECRET</b> — exceptionally grave damage; <b>SECRET</b> — serious damage; <b>CONFIDENTIAL</b> — damage to national security."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"Classification",q:"What are the handling requirements for TOP SECRET material?",a:"Serialized, <b>annually inventoried</b>, transmitted via DCS / DOS Diplomatic Courier or cleared personnel, and <b>double-wrapped</b> (two opaque sealed covers)."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"Classification",q:"What is CUI and what did it replace?",a:"<b>Controlled Unclassified Information</b> — replaced FOUO. It requires safeguarding and dissemination controls but is not classified."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"Classification",q:"What are the requirements to access SCI?",a:"<b>Mission need + need-to-know</b>, access only in an accredited <b>SCIF</b>, an <b>NDA</b>, and indoctrination. Transported double-wrapped."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"Policy",q:"Which Executive Order provides the classification framework, and which ICDs govern intel protection?",a:"<b>EO 13526</b> (classification framework). <b>ICD 700</b> (protection of national intel), <b>ICD 701</b> (unauthorized disclosure), <b>ICD 703</b> (SCI), <b>ICD 710</b> (IC classification marking system). The IC marking system is maintained by the <b>CAPCO Register and Manual</b>."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"Dissemination",q:"What do the markings NOFORN, ORCON, and REL TO mean?",a:"<b>NOFORN</b> — not releasable to foreign nationals; <b>ORCON</b> — originator controls dissemination; <b>REL TO [list]</b> — releasable to specified countries."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"Dissemination",q:"Name the four SCI control systems and their markings.",a:"<b>GAMMA (G)</b>, <b>HCS</b> (HUMINT Control System), <b>SI</b> (Special Intelligence/SIGINT), and <b>TK</b> (Talent Keyhole — space-based collection)."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"OCA",q:"What is the difference between original and derivative classification?",a:"<b>OCA</b> (Original Classification Authority) makes the initial determination that info needs protection. <b>Derivative classification</b> incorporates or paraphrases existing classified info and is marked consistent with the source."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"Declassification",q:"What are the default and maximum declassification timelines?",a:"OCA sets a date or event; default is <b>10 years</b>; maximum is <b>25 years</b> unless extended."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"Definitions",q:"Distinguish a loss from a compromise of classified information.",a:"<b>Loss</b> — classified info cannot be accounted for or found. <b>Compromise</b> — disclosed to a person without clearance, access, or need-to-know."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"Roles",q:"Contrast the SSO and the Security Manager.",a:"<b>SSO</b> owns the SCIF — security/control/use, personnel access, TS/SCI investigations and training. <b>Security Manager</b> owns the command security program — personnel security plan, eligibility advice, and need-to-know enforcement."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"Disclosure",q:"What is the reporting timeline for an unauthorized SCI disclosure?",a:"Report to the <b>SSO</b>; the SSO reports within <b>72 hours</b>; the OCA conducts a classification review."},
+{m:"101",mt:"Safety & Security Fundamentals",topic:"Definitions",q:"Define 'need-to-know' and 'access.'",a:"<b>Need-to-know</b> — required for lawful, authorized duties. <b>Access</b> — the ability and opportunity to obtain information; there is no automatic right by rank or clearance, and it is limited to the minimum necessary."},
+
+/* ---------- 102 C2 / Joint Ops ---------- */
+{m:"102",mt:"Command & Control / Joint Ops",topic:"Authorities",q:"What is COCOM, where does it come from, and can it be delegated?",a:"<b>Combatant Command authority</b> under <b>Title 10 §164</b>, held only by CCDRs. It <b>cannot be delegated or transferred</b>."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"Authorities",q:"Differentiate OPCON, TACON, and ADCON.",a:"<b>OPCON</b> — operational control, may be delegated below CCMD. <b>TACON</b> — tactical control; detailed direction and movements within an ops area. <b>ADCON</b> — administrative control; support, organize, personnel, training, discipline."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"Authorities",q:"What is DIRLAUTH?",a:"<b>Direct Liaison Authority</b> — authority to consult or coordinate directly with another command."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"Continuum",q:"What three states make up the Competition Continuum (JP 3-0, 2022)?",a:"<b>Cooperation</b>, <b>Competition</b> (below armed conflict), and <b>Armed Conflict / War</b>. It replaced the old 'Conflict Continuum / RoMO.'"},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"Phases",q:"Name the phases (0–5) of a joint operation.",a:"<b>0 Shape</b>, <b>1 Deter</b>, <b>2 Seize Initiative</b>, <b>3 Dominate</b>, <b>4 Stabilize</b>, <b>5 Enable Civil Authority</b>."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"COCOMs",q:"Name the four functional Combatant Commands.",a:"<b>USSOCOM</b> (special ops), <b>USSTRATCOM</b> (strategic deterrence/nuclear/NC3), <b>USTRANSCOM</b> (mobility), <b>USCYBERCOM</b> (cyberspace)."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"COCOMs",q:"What makes SOCOM unique among COCOMs?",a:"It has a unique acquisition authority via <b>Major Force Program 11 (MFP-11)</b>, executes global ops against terrorist networks when directed by POTUS/SECDEF, and programs/budgets for SOF supporting the Theater SOCs."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"Navy Components",q:"Which numbered fleet and Navy component support CENTCOM?",a:"<b>NAVCENT</b> / <b>5th Fleet</b>, headquartered at <b>NSA Bahrain</b>."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"Navy Components",q:"Which Navy component covers both EUCOM and AFRICOM, and what fleet?",a:"<b>USNAVEUR-NAVAF</b> at NSA Naples, Italy, with <b>6th Fleet</b> supporting both."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"OODA",q:"What are the steps of the OODA loop, and where does intel fit?",a:"<b>Observe → Orient → Decide → Act</b>. Intelligence's primary role is in the <b>Orient</b> phase, building the commander's situational awareness."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"C2 Concepts",q:"What is 'command by negation'?",a:"Subordinates act unless explicitly denied by the commander — preserving operations in degraded communications environments."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"CWC",q:"In the CWC construct, what do call-sign suffix letters A, Q, S, W, and X designate?",a:"<b>A — OTC</b>, <b>Q — IWC</b> (Information Warfare), <b>S — SUWC</b> (Surface), <b>W — AMDC</b> (Air & Missile Defense), <b>X — ASWC</b> (Antisubmarine)."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"CWC",q:"What does the suffix Z (SCC) designate, and what happens if it is overwhelmed?",a:"<b>Sea Combat Commander</b> — combines SUWC (S) and ASWC (X). If overwhelmed, it breaks back into separate <b>S</b> and <b>X</b> commanders."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"MOC",q:"What is the Maritime Operations Center (MOC) and at what level of war does it operate?",a:"A C2 framework for fleet commanders at the <b>operational level of war</b>. It supports decision-making and synchronizes functions horizontally and vertically using N-codes + Cross-Functional Teams forming Boards/Centers/Cells/Working Groups (B2CWG), managed by a battle rhythm."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"MOC",q:"Name the three time horizons in a MOC.",a:"<b>Near</b> — Current Operations; <b>Mid</b> — Future Operations; <b>Far</b> — Future Plans."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"Plans/Orders",q:"What are the five sections of an OPLAN/OPORD?",a:"<b>1) Situation, 2) Mission, 3) Execution, 4) Administration & Logistics, 5) Command & Control.</b>"},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"Plans/Orders",q:"Differentiate a WARNORD, OPORD, and EXORD.",a:"<b>WARNORD</b> — preliminary planning directive; allocates forces but does not authorize execution. <b>OPORD</b> — directive for coordinated execution. <b>EXORD</b> — directive to implement an approved CONOPS and initiate operations."},
+{m:"102",mt:"Command & Control / Joint Ops",topic:"Plans/Orders",q:"What is a FRAGORD?",a:"A <b>Fragmentary Order</b> — an abbreviated OPORD that changes or modifies an existing order, using the same 5 OPORD headings."},
+
+/* ---------- 103 IC & Naval Intel ---------- */
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"IC",q:"Who leads the Intelligence Community and how many member organizations are there?",a:"The <b>DNI</b> (Director of National Intelligence, via ODNI) leads the IC's <b>18</b> member organizations and sets priorities through the National Intelligence Strategy."},
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"IC",q:"What is ONI's mission and where is it located?",a:"The <b>Office of Naval Intelligence</b> (Suitland, MD) produces <b>maritime intelligence</b> — weapons/tech proliferation, transnational threats, counter-narcotics, and the global maritime environment."},
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"IC",q:"What are the missions of NSA, NGA, and NRO?",a:"<b>NSA</b> (Fort Meade) — cryptology: SIGINT + cybersecurity. <b>NGA</b> (Fort Belvoir) — GEOINT functional manager. <b>NRO</b> (Chantilly) — designs, builds, launches, and operates intelligence satellites."},
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"IC",q:"Which agency is the OSINT functional manager and hosts the Open Source Enterprise?",a:"The <b>CIA</b> — its Director serves as OSINT Functional Manager and it hosts the <b>Open Source Enterprise (OSE)</b>."},
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"Naval Commands",q:"What is OPNAV N2/N6 and what echelon is it?",a:"<b>Echelon II</b> under the CNO; it holds ADCON over ONI and directs maritime intel collection, analysis, production, and dissemination across the naval enterprise."},
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"Naval Commands",q:"What is NAVIFOR's role?",a:"Naval Information Forces — <b>Echelon III</b> under USFFC; generates Information Warfare forces and owns IW doctrine, policy, governance, training, and community management (~85 commands, ~20K billets)."},
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"ONI",q:"Name ONI's five Centers of Excellence.",a:"<b>Nimitz</b> (Operational Intelligence), <b>Farragut</b> (Technical Analysis / S&TI, home of NAIL), <b>Hopper</b> (Information Services), <b>Brooks</b> (Maritime Engagement), <b>Kennedy</b> (Irregular Warfare)."},
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"ONI Groups",q:"What does ONI SWORD analyze?",a:"<b>Submarine Warfare Operations Research Division</b> — acoustic analysis of foreign submarine tactical events; raw ACINT analysis."},
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"ONI Groups",q:"What does ONI SPEAR focus on?",a:"<b>Strike Projection Evaluation and Anti-air Research</b> — foreign air forces and IADS; supports strike, anti-air, anti-surface, and expeditionary missions."},
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"CVIC",q:"What is the SUPPLOT and what does it do?",a:"The all-source fusion focal point onboard a CVN — provides all-source tactical <b>I&W</b>, fusing SIGINT/IMINT/HUMINT and monitoring the geopolitical/military situation for TFCC, CDC, and warfare commanders."},
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"Designators",q:"What are the officer designator and enlisted rating for Navy intelligence?",a:"Officer: <b>1835</b>; Chief Warrant Officer: <b>7838</b>; Enlisted rating: <b>Intelligence Specialist (IS)</b>."},
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"CSG",q:"What is the typical composition of a Carrier Strike Group?",a:"1× CVN, 6× DDG, 2× CG, and 2× logistics ships (TAO/TAK-E)."},
+{m:"103",mt:"Intelligence Community & Naval Intel",topic:"Fleets",q:"Which numbered fleet is the Navy's cyber fleet, and where is it?",a:"<b>10th Fleet</b> (Fleet Cyber Command), at Fort Meade."},
+
+/* ---------- 104 Doctrine & Tradecraft ---------- */
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"Levels",q:"Name the three levels of war for intelligence and a key user of each.",a:"<b>Strategic</b> (senior leaders, CCDRs), <b>Operational</b> (CCDRs, sub-JFCs, component commanders), <b>Tactical</b> (commanders executing battles)."},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"Data",q:"Distinguish data, information, and intelligence.",a:"<b>Data</b> — discrete, raw, inarguable pieces. <b>Information</b> — data formatted/correlated, useful but not yet intel. <b>Intelligence</b> — processed information given analytic value."},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"Cycle",q:"List the phases of the intelligence cycle.",a:"<b>1) Planning & Direction, 2) Collection, 3) Processing & Exploitation, 4) Analysis & Production, 5) Dissemination & Integration</b> — joint doctrine adds <b>6) Evaluation & Feedback</b>."},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"Requirements",q:"Differentiate CCIR, PIR, EEI, and FFIR.",a:"<b>CCIR</b> — info the JFC needs to decide (PIRs + FFIRs feed it). <b>PIR</b> — adversary/OE-focused, drives ISR; approved PIRs become CCIRs. <b>EEI</b> — refines PIRs into collectable elements. <b>FFIR</b> — friendly force status."},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"Products",q:"Name several of the joint categories of intelligence products.",a:"<b>I&W, Basic/GMI, Current, Target, S&TI, Counterintelligence, Estimative, and Identity</b> intelligence."},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"Products",q:"Which intelligence product type is the hardest and least reliable?",a:"<b>Estimative</b> intelligence — it predicts future events based on basic + current intel."},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"IPOE",q:"What are the four phases of IPOE?",a:"<b>Define</b> the OE → <b>Describe</b> the OE → <b>Evaluate</b> the adversary → <b>Determine</b> adversary COAs (including Most Likely and Most Dangerous)."},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"NPP",q:"List the six steps of the Naval Planning Process.",a:"<b>1) Mission Analysis, 2) COA Development, 3) COA Analysis (Wargaming), 4) COA Comparison & Decision, 5) Plans & Orders Development, 6) Transition.</b>"},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"NPP",q:"What is ANNEX B and what are its sections?",a:"<b>Annex B</b> is the Intelligence annex of an order, with five sections: Situation, Mission, Execution, Administration & Logistics, and Command & Control."},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"Red Team",q:"What is the purpose of a Red Team?",a:"An advanced analytic technique that <b>challenges the prevailing analytic viewpoint</b> by adopting an adversary mindset for alternative analysis, countering bias."},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"ACH",q:"What is Analysis of Competing Hypotheses (ACH)?",a:"A structured technique that identifies a broad range of probable hypotheses and subjects them to rigorous review (a hypothesis matrix scored against evidence) to find the most probable one."},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"ICD 203",q:"What governs analytic production, and how many standards/tradecraft characteristics does it have?",a:"<b>ICD 203</b> — it sets <b>5 analytic standards</b> and <b>9 tradecraft standards</b> to which all IC products are held."},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"ICD 203",q:"What are the nine ICD 203 tradecraft standards (SUDARAA-AV)?",a:"<b>S</b>ourcing, <b>U</b>ncertainty, <b>D</b>istinctions, <b>A</b>lternatives, <b>R</b>elevance, <b>A</b>rgumentation, <b>A</b>nalytic line, <b>A</b>ccuracy, <b>V</b>isualization."},
+{m:"104",mt:"Intel Doctrine & Analytic Tradecraft",topic:"ICD 203",q:"What three factors determine confidence level, and what must you never mix?",a:"Confidence is based on: number of <b>key assumptions</b>, <b>credibility/diversity of sourcing</b>, and <b>strength of argumentation</b>. Never mix likelihood terms across rows, and never mix likelihood with confidence in the same sentence."},
+
+/* ---------- 105 SIGINT ---------- */
+{m:"105",mt:"SIGINT & Technical Intelligence",topic:"NSA",q:"What is NSA's role with respect to SIGINT?",a:"NSA leads US cryptology (SIGINT + cybersecurity), enables CNO, and is the <b>SIGINT Functional Manager</b>. The Central Security Service (CSS) performs collection, processing, production, and dissemination."},
+{m:"105",mt:"SIGINT & Technical Intelligence",topic:"SIGINT",q:"What three disciplines make up SIGINT?",a:"<b>COMINT</b> (communications), <b>ELINT</b> (electronic/non-comms), and <b>FISINT</b> (foreign instrumentation signals)."},
+{m:"105",mt:"SIGINT & Technical Intelligence",topic:"ELINT",q:"Differentiate OPELINT and TECHELINT.",a:"<b>OPELINT</b> — operational use of foreign emitters (what mode, how often, where, mobile?) for battlespace awareness. <b>TECHELINT</b> — in-depth technical analysis of precise parameters (frequency, PRF, pulse width, power) for vulnerabilities and countermeasure development."},
+{m:"105",mt:"SIGINT & Technical Intelligence",topic:"COMINT",q:"What is COMINT?",a:"Intelligence from intercepted <b>foreign communications</b> via radio, wire, or electromagnetic means. Limited by safeguards against US Persons collection, volume, and analyst bandwidth."},
+{m:"105",mt:"SIGINT & Technical Intelligence",topic:"Spectrum",q:"Which frequency bands are used to communicate with submerged submarines?",a:"<b>ELF</b> (3–30 Hz, penetrates hundreds of feet of seawater) and <b>VLF</b> (3–30 kHz, penetrates ~20m, reliable backup during nuclear blackout)."},
+{m:"105",mt:"SIGINT & Technical Intelligence",topic:"Spectrum",q:"Which bands are primarily line-of-sight for tactical voice and radar/SATCOM?",a:"<b>UHF</b> (300 MHz–3 GHz) for tactical voice and <b>SHF</b> (3–30 GHz) for radar and SATCOM — both LOS."},
+{m:"105",mt:"SIGINT & Technical Intelligence",topic:"Spectrum",q:"Which band uses ionospheric bounce for long-range terrestrial communication?",a:"<b>HF</b> (3–30 MHz) — bounces off the ionosphere to reach thousands of miles."},
+{m:"105",mt:"SIGINT & Technical Intelligence",topic:"Propagation",q:"Define skip zone and skip distance.",a:"<b>Skip zone</b> — the silent region between where the ground wave fades and the sky wave returns. <b>Skip distance</b> — distance from the transmitter to the first sky wave return; depends on frequency, angle of incidence, and ionization."},
+{m:"105",mt:"SIGINT & Technical Intelligence",topic:"MASINT",q:"What is MASINT and what is its process?",a:"Intelligence from quantitative/qualitative analysis of <b>physical attributes (signatures)</b> to characterize, locate, or identify targets. Process: measure phenomena → plot signatures → compare against a database for repeatability."},
+{m:"105",mt:"SIGINT & Technical Intelligence",topic:"ACINT",q:"What is ACINT used for?",a:"Acoustic Intelligence — to detect and track subsurface entities by exploiting sound, pressure waves, and vibrations; identifies discrete frequencies from machinery, propellers, and sonar."},
+{m:"105",mt:"SIGINT & Technical Intelligence",topic:"CRITIC",q:"What is CRITIC and who controls it?",a:"The IC <b>Critical Information</b> reporting system for rapid dissemination of critical messages to senior officials — under OPCON of <b>DIRNSA</b>."},
+
+/* ---------- 106 GEOINT ---------- */
+{m:"106",mt:"GEOINT",topic:"Definition",q:"Define GEOINT and its three elements.",a:"The exploitation and analysis of imagery and geospatial information to describe, assess, and visually depict physical features and geographically referenced activities. Three elements: <b>Imagery</b>, <b>IMINT</b>, and <b>Geospatial Information</b>."},
+{m:"106",mt:"GEOINT",topic:"Organizations",q:"Who is the GEOINT functional manager?",a:"<b>NGA</b> (National Geospatial-Intelligence Agency) — it also handles safety of navigation, nautical/aero charts, and procures commercial imagery."},
+{m:"106",mt:"GEOINT",topic:"Imagery",q:"Compare EO, IR, and SAR imagery.",a:"<b>EO</b> — visible spectrum, best in daylight, weather-dependent. <b>IR</b> — thermal, works at night, sees heat signatures. <b>SAR</b> — active radar, all-weather day/night, sees through clouds."},
+{m:"106",mt:"GEOINT",topic:"Imagery",q:"Difference between multispectral (MSI) and hyperspectral (HSI) imagery?",a:"<b>MSI</b> uses a few bands for broad categorization; <b>HSI</b> uses many narrow bands so materials/objects reveal unique spectral 'fingerprints.'"},
+{m:"106",mt:"GEOINT",topic:"Imagery",q:"Differentiate passive and active imaging modes.",a:"<b>Passive</b> uses reflected solar energy (detector only). <b>Active</b> provides its own source + detector (e.g., SAR)."},
+{m:"106",mt:"GEOINT",topic:"Collection",q:"What EO restricts imaging of US persons by national technical means?",a:"<b>EO 12333</b> — restricts the US Government from imaging US persons."},
+{m:"106",mt:"GEOINT",topic:"NIIRS",q:"What is NIIRS and how many levels does it have?",a:"The <b>National Imagery Interpretability Rating Scale</b> — 10 graduated levels (0–9), each tied to interpretation tasks. Higher NIIRS = more demanding tasks possible."},
+{m:"106",mt:"GEOINT",topic:"NIIRS",q:"What is Ground Sample Distance (GSD)?",a:"The distance between pixel centers measured on the ground — a measure of imagery resolution."},
+{m:"106",mt:"GEOINT",topic:"Nadir",q:"Give one advantage and one disadvantage of off-nadir imaging.",a:"<b>Advantage</b> — wider coverage, more passes, more 3D detail (heights, tunnel entrances, hull IDs). <b>Disadvantage</b> — decreased resolution from pixel stretching."},
+{m:"106",mt:"GEOINT",topic:"Limitations",q:"What are key limitations of GEOINT?",a:"Expensive systems, difficult to disseminate, <b>does not disclose intent</b>, and atmospheric-dependent. Best corroborated with HUMINT or SIGINT."},
+
+/* ---------- 107 FISINT & MASINT ---------- */
+{m:"107",mt:"FISINT & MASINT",topic:"FISINT",q:"What is FISINT derived from?",a:"Foreign Instrumentation Signals Intelligence — from <b>telemetry, beaconry, electronic interrogators, and tracking/fusing/arming/firing command systems and video data links</b>, associated with testing or deployment of non-US platforms."},
+{m:"107",mt:"FISINT & MASINT",topic:"MASINT",q:"Name several MASINT disciplines.",a:"<b>Geophysical</b> (magnetic/acoustic/seismic), <b>Radar</b>, <b>Electro-optical</b>, <b>Radio</b>, <b>Nuclear</b>, and <b>Materials</b> (chem/bio)."},
+{m:"107",mt:"FISINT & MASINT",topic:"MASINT",q:"Why is MASINT considered hard to deceive?",a:"Because countering a signature typically produces <b>another collectible signature</b> — it's grounded in sound scientific principles."},
+{m:"107",mt:"FISINT & MASINT",topic:"Organizations",q:"Name three organizations supporting FISINT/MASINT.",a:"<b>DEFSMAC</b> (Defense Special Missile and Aerospace Center), <b>NASIC</b> (National Air and Space Intelligence Center), and <b>AFTAC</b> (Air Force Technical Applications Center)."},
+
+/* ---------- 108 OSINT ---------- */
+{m:"108",mt:"OSINT",topic:"Definition",q:"Define OSINT and the terms PAI and CAI.",a:"Intelligence based on open-source info publicly obtainable by request, purchase, or observation. <b>PAI</b> — Publicly Available Information; <b>CAI</b> — Commercially Available Information."},
+{m:"108",mt:"OSINT",topic:"Roles",q:"What roles does OSINT play relative to other INTs?",a:"Provides <b>warnings/tips/cues</b> to other INTs, context for classified info, rapid reduction of target sets, and fills gaps — all <b>without sensitive sources or methods</b>."},
+{m:"108",mt:"OSINT",topic:"Risks",q:"What are the key risks of OSINT?",a:"Susceptible to adversary <b>deception</b> (planted misinfo), source bias/inaccuracy, information overload, and validity that often can't be confirmed. Requires research expertise and OPSEC (non-attribution)."},
+
+/* ---------- 109 HUMINT / CI ---------- */
+{m:"109",mt:"HUMINT, CI & Interrogation",topic:"NCIS",q:"What is NCIS authorized to do regarding CI?",a:"NCIS is the <b>only DON component authorized to conduct CI investigations</b> into espionage, sabotage, terrorism, and foreign intelligence activities."},
+{m:"109",mt:"HUMINT, CI & Interrogation",topic:"Authorities",q:"Under whose authority do Navy CI and Navy HUMINT fall?",a:"<b>Navy CI</b> — under CNO (N2). <b>Navy HUMINT</b> — under the DNI, managed via <b>N2X</b>."},
+{m:"109",mt:"HUMINT, CI & Interrogation",topic:"CI vs HUMINT",q:"Distinguish HUMINT from CI.",a:"<b>HUMINT</b> collects info from human sources (debriefings, contacts, document/material acquisition). <b>CI</b> collects, protects, and reports on foreign intel capabilities/intentions to inform friendly forces of threats."},
+{m:"109",mt:"HUMINT, CI & Interrogation",topic:"Collection",q:"Differentiate overt, covert, and clandestine collection.",a:"<b>Overt</b> — no concealment; legal and open. <b>Covert</b> — activity known to exist but US sponsorship not apparent/acknowledged. <b>Clandestine</b> — both the collection and source handling are concealed; no acknowledgment of activity at all."},
+{m:"109",mt:"HUMINT, CI & Interrogation",topic:"Methodologies",q:"Name the five primary HUMINT methodologies.",a:"<b>1) Liaison, 2) Debriefing, 3) Interrogation, 4) Elicitation, 5) Recruited Sources / Clandestine Operations.</b>"},
+{m:"109",mt:"HUMINT, CI & Interrogation",topic:"Reports",q:"What is an IIR and why is it important?",a:"<b>Intelligence Information Report</b> — the primary vehicle for delivering HUMINT info to consumers, in a structured message format for automated IC database entry."},
+{m:"109",mt:"HUMINT, CI & Interrogation",topic:"Biometrics",q:"Differentiate physical and behavioral biometrics.",a:"<b>Physical</b> — face, hand/finger geometry, iris, vein structure. <b>Behavioral</b> — voice, handwriting, typing rhythm, gait."},
+{m:"109",mt:"HUMINT, CI & Interrogation",topic:"J2X",q:"What is J2X?",a:"The joint-level organization that manages <b>HUMINT and CI activities</b>."},
+{m:"109",mt:"HUMINT, CI & Interrogation",topic:"Systems",q:"What system replaced HOTR for HUMINT/CI tasking and reporting?",a:"<b>CHROME</b> — Counterintelligence and Human Intelligence Requirements-Reporting & Operations Management Environment."},
+{m:"109",mt:"HUMINT, CI & Interrogation",topic:"DOMEX",q:"What is DOMEX?",a:"<b>Document and Media Exploitation</b> — exploitation of laptops, files, and digital storage recovered during operations."},
+
+/* ---------- 110 AT/FP ---------- */
+{m:"110",mt:"Anti-Terrorism / Force Protection",topic:"FPCON",q:"List the Force Protection Conditions from lowest to highest.",a:"<b>Normal → Alpha → Bravo → Charlie → Delta.</b>"},
+{m:"110",mt:"Anti-Terrorism / Force Protection",topic:"FPCON",q:"What triggers FPCON Delta?",a:"An attack has occurred or is anticipated against <b>specific installations or areas</b>. Full response measures, firearms, non-essential ops stopped; sustainable on a limited basis only."},
+{m:"110",mt:"Anti-Terrorism / Force Protection",topic:"FPCON",q:"What distinguishes FPCON Bravo from Charlie?",a:"<b>Bravo</b> — increased or more predictable threat, but timing/nature/targets unknown. <b>Charlie</b> — an incident occurred in the AOI or intel indicates hostile/terrorist action is likely."},
+{m:"110",mt:"Anti-Terrorism / Force Protection",topic:"MTAC",q:"What is a BLUE DART message?",a:"A <b>flash-precedence</b> threat warning issued by MTAC for a <b>credible, specific, and imminent</b> threat."},
+{m:"110",mt:"Anti-Terrorism / Force Protection",topic:"MTAC",q:"What is MTAC and what does NCIS provide?",a:"The <b>Multiple Threat Alert Center</b>. NCIS collects/analyzes/disseminates info on criminal, terrorist, foreign intel, and cyber threats, runs a 24/7 watch, and is the DON lead for LEDDES and eGuardian."},
+{m:"110",mt:"Anti-Terrorism / Force Protection",topic:"Threat Levels",q:"Name the four terrorism threat levels.",a:"<b>High, Significant, Moderate, Low.</b>"},
+{m:"110",mt:"Anti-Terrorism / Force Protection",topic:"SCIO",q:"What is the SCIO?",a:"The <b>Staff Counterintelligence Officer</b> — the commander's direct connection to NCIS and MTAC AT/FP resources."},
+
+/* ---------- 111 Surface Warfare ---------- */
+{m:"111",mt:"Surface Warfare",topic:"MIO",q:"What is MIO and what does the acronym VBSS stand for?",a:"<b>Maritime Interdiction Operations</b> — monitor/query/board merchants in international waters to enforce sanctions. <b>VBSS</b> = Visit, Board, Search & Seizure."},
+{m:"111",mt:"Surface Warfare",topic:"Boarding",q:"Name the three boarding types and who can conduct an opposed boarding.",a:"<b>Compliant, Noncompliant, Opposed</b>. Only a <b>USMC ARG/MEU MRF, USCG MSRT, or USN SOF</b> can conduct an opposed boarding."},
+{m:"111",mt:"Surface Warfare",topic:"EMIO",q:"What is EMIO and who authorizes it?",a:"<b>Expanded MIO</b> — terror-related interdiction; <b>authorized by POTUS and directed by SECDEF</b> to deter, degrade, disrupt, or gather intel."},
+{m:"111",mt:"Surface Warfare",topic:"SNOOPIE",q:"What is the SNOOPIE team and what report does it submit?",a:"<b>Ship's Nautical or Otherwise Photographic Interpretation and Examination</b> — IS + Mass Comms Specialists collecting photos/video of close-aboard surface/air contacts. Submits a <b>SHIR</b> (Standard Human Intelligence Report)."},
+{m:"111",mt:"Surface Warfare",topic:"OPTASK VI",q:"How does OPTASK Visual Information differ from SNOOPIE?",a:"OPTASK VI is a <b>no-fail mission</b> to document unsafe/unprofessional/abnormal interactions by foreign militaries against US assets — used to 'win the battle of the narrative.' It is NOT the same as SNOOPIE."},
+{m:"111",mt:"Surface Warfare",topic:"MIO Phases",q:"Name the five phases of MIO.",a:"<b>1) Detection & Surveillance, 2) Query/Approach/Stopping, 3) Board & Search, 4) Debarkation, 5) Post-boarding.</b>"},
+{m:"111",mt:"Surface Warfare",topic:"INCSEA",q:"What is INCSEA?",a:"The <b>1972 US-USSR Agreement on the Prevention of Incidents at Sea</b> — promotes safe navigation, requires 3–5 days advance notice of dangerous actions, channels incidents through naval attachés, and includes annual reviews."},
+{m:"111",mt:"Surface Warfare",topic:"AIS",q:"What is AIS?",a:"<b>Automatic Identification System</b> — an IMO-standard system that transmits position, identity, course, and speed for collision avoidance and safety at sea."},
+{m:"111",mt:"Surface Warfare",topic:"Databases",q:"What is the ONI SEALINK database?",a:"An ONI database (SIPR) of ship movements, characteristics, and foreign vessel images. <b>ORCA</b> is the modern updated ONI database; <b>SEAPORT</b> is the MIO database."},
+{m:"111",mt:"Surface Warfare",topic:"Evidence",q:"Within what timeframe must an MIO Evidence Package be submitted?",a:"<b>Within 72 hours</b> — it has 9 sections including sequence of events, vessel info, photographs, statements, tanks & cargo, documents, video, oil samples, and other evidence."},
+
+/* ---------- 112 Strike Warfare ---------- */
+{m:"112",mt:"Strike Warfare",topic:"Targeting",q:"List the six phases of the Joint Targeting Cycle.",a:"<b>1) Commander's objectives/guidance/intent, 2) Target development & prioritization, 3) Capabilities analysis, 4) Commander's decision & force assignment, 5) Mission planning & force execution, 6) Assessment.</b>"},
+{m:"112",mt:"Strike Warfare",topic:"IADS",q:"Name the IADS elements from top to bottom.",a:"<b>SOC</b> (Sector Operations Center) → <b>IOC</b> (Intercept Operations Center) → <b>CP</b> (Command Posts) → <b>RP</b> (Reporting Posts) → <b>OP</b> (Observation Posts)."},
+{m:"112",mt:"Strike Warfare",topic:"IADS",q:"Give one pro and one con of centralized IADS control.",a:"<b>Pro</b> — less friendly fire; operators focus on few actions. <b>Con</b> — relies on reliable comms up/down; susceptible to jamming, deception, and comms loss."},
+{m:"112",mt:"Strike Warfare",topic:"Targeting",q:"Differentiate deliberate and dynamic targeting.",a:"<b>Deliberate</b> — planned, scheduled JIPTL targets (typically stationary/strategic). <b>Dynamic</b> — emerging, time-sensitive targets (typically mobile/tactical)."},
+{m:"112",mt:"Strike Warfare",topic:"SOF Targeting",q:"What does F3EAD stand for and when is it used?",a:"<b>Find, Fix, Finish, Exploit, Analyze, Disseminate</b> — used especially for HVIs (High-Value Individuals)."},
+{m:"112",mt:"Strike Warfare",topic:"SOF Targeting",q:"What does the kinetic targeting cycle F2T2EA stand for?",a:"<b>Find, Fix, Track, Target, Engage, Assess.</b>"},
+{m:"112",mt:"Strike Warfare",topic:"Target Lists",q:"What is the JIPTL and what is a No-Strike List?",a:"<b>JIPTL</b> — Joint Integrated Prioritized Target List, commander-approved. <b>No-Strike List</b> — targets that cannot be attacked (churches, schools, hospitals) per policy, diplomatic concerns, international law, or ROE."},
+{m:"112",mt:"Strike Warfare",topic:"DPI/DMPI",q:"Differentiate DPI and DMPI.",a:"<b>DPI</b> (Desired Point of Impact) — precise point for a <b>single unitary weapon</b>. <b>DMPI</b> (Desired Mean Point of Impact) — center point for <b>multiple weapons or area munitions</b>."},
+{m:"112",mt:"Strike Warfare",topic:"Assessment",q:"Differentiate BDA and MEA.",a:"<b>BDA</b> — Battle Damage Assessment: 'What level of damage occurred?' <b>MEA</b> — Munitions Effectiveness Assessment: 'Did the weapon act as intended?'"},
+{m:"112",mt:"Strike Warfare",topic:"ATO",q:"What is the ATO and who controls it?",a:"The <b>Air Tasking Order</b> — the means by which the <b>JFACC</b> controls air forces. It lists air sorties for a fixed <b>24-hour period</b> with call signs, aircraft types, and mission types."},
+{m:"112",mt:"Strike Warfare",topic:"MISREP",q:"When must a MISREP be released and what governs it?",a:"Released within <b>2 hours after shutdown</b>, governed by the <b>FICM</b> (Fleet Intelligence Collection Manual)."},
+{m:"112",mt:"Strike Warfare",topic:"Collateral",q:"When is collateral damage NOT unlawful?",a:"When it is <b>not excessive</b> in relation to the overall military advantage anticipated."},
+
+/* ---------- 113 Undersea / Mine Warfare ---------- */
+{m:"113",mt:"Undersea & Mine Warfare",topic:"ASW Commands",q:"What is the TASWC?",a:"The <b>Theater ASW Commander</b> — designated by the NCC/Fleet Commander; controls all theater ASW assets and coordinates with the JTF for offensive/defensive ASW."},
+{m:"113",mt:"Undersea & Mine Warfare",topic:"WSM/PMI",q:"Differentiate Waterspace Management (WSM) and Prevention of Mutual Interference (PMI).",a:"<b>WSM</b> — allocates waterspace for ASW attacks, enabling engagement of hostile subs while preventing attacks on friendly subs. <b>PMI</b> — procedures to prevent submerged collisions between friendly subs or with hazards (towed arrays, oil rigs, detonations)."},
+{m:"113",mt:"Undersea & Mine Warfare",topic:"Search",q:"Differentiate area, barrier, and datum searches.",a:"<b>Area</b> — large area, open ocean, insufficient intel for a barrier. <b>Barrier</b> — line of sensors perpendicular to the contact's heading. <b>Datum</b> — searches a known/suspected contact point."},
+{m:"113",mt:"Undersea & Mine Warfare",topic:"Sound",q:"What is the Deep Sound Channel (DSC)?",a:"A region of the water column where sound speed decreases to a minimum then increases with pressure; sound rays bend toward the channel axis, enabling <b>long-range detection</b>."},
+{m:"113",mt:"Undersea & Mine Warfare",topic:"MCM",q:"What three components make up the US Navy MCM triad?",a:"<b>AMCM</b> (airborne), <b>SMCM</b> (surface), and <b>UMCM</b> (underwater) mine countermeasures."},
+{m:"113",mt:"Undersea & Mine Warfare",topic:"MCM",q:"Differentiate mine hunting and mine sweeping.",a:"<b>Mine hunting</b> uses sensors + neutralization to locate and dispose of individual mines. <b>Mine sweeping</b> clears mines mechanically, explosively, or by influence (acoustic/magnetic signatures)."},
+{m:"113",mt:"Undersea & Mine Warfare",topic:"MCM",q:"Differentiate mechanical and influence sweeping.",a:"<b>Mechanical</b> physically contacts the mine or its appendages. <b>Influence</b> produces a ship-like signature to actuate the mine."},
+{m:"113",mt:"Undersea & Mine Warfare",topic:"Mines",q:"Name the three mine actuation methods and three types of ship damage.",a:"Actuation: <b>Contact, Influence, Command & Control</b>. Damage: hull rupture from pressure wave, internal equipment damage from vibration, flooding/structural damage from hull whipping."},
+{m:"113",mt:"Undersea & Mine Warfare",topic:"Minefields",q:"Name the three minefield categories.",a:"<b>Offensive</b> (in enemy-controlled waters), <b>Defensive</b> (in neutral waters to prevent penetration), and <b>Protective</b> (in friendly waters to impede/slow the enemy)."},
+{m:"113",mt:"Undersea & Mine Warfare",topic:"IUSS",q:"What is IUSS and what is its mission?",a:"The <b>Integrated Undersea Surveillance System</b> — global maritime acoustic surveillance using persistent, long-range, fixed + mobile systems for submarine detection."},
+{m:"113",mt:"Undersea & Mine Warfare",topic:"MCM Platforms",q:"What is the primary AMCM helicopter for sweeping, and what does the MH-60S use?",a:"The <b>MH-53E Sea Dragon</b> performs mechanical/acoustic/magnetic towed sweeping. The <b>MH-60S Seahawk</b> uses the <b>AMNS</b> (Airborne Mine Neutralization System)."},
+
+/* ---------- 114 IO & Cyber ---------- */
+{m:"114",mt:"Information & Cyberspace Operations",topic:"IO Core",q:"Name the five core capabilities of Information Operations.",a:"<b>MILDEC</b> (Military Deception), <b>MISO</b> (Military Info Support Ops), <b>OPSEC</b> (Operations Security), <b>EW</b> (Electronic Warfare), and <b>Cyberspace Operations</b>."},
+{m:"114",mt:"Information & Cyberspace Operations",topic:"OPSEC",q:"List the five steps of the OPSEC process.",a:"<b>1) Identify Critical Information, 2) Analyze Threats, 3) Analyze Vulnerabilities, 4) Assess Risk, 5) Apply OPSEC Measures.</b>"},
+{m:"114",mt:"Information & Cyberspace Operations",topic:"IWC",q:"What kind of warfare commander is the strike group IWC, and to whom is it responsible?",a:"A <b>primary warfare commander</b> (not a functional group or coordinator). Responsible to the CWC for IO plans and to the strike group commander for protecting the force against hostile info, electronic attack, propaganda, and deception."},
+{m:"114",mt:"Information & Cyberspace Operations",topic:"TACSIT",q:"Define TACSIT I, II, and III.",a:"<b>TACSIT I</b> — exact location of the strike group is known to the enemy; <b>TACSIT II</b> — general location known; <b>TACSIT III</b> — location unknown."},
+{m:"114",mt:"Information & Cyberspace Operations",topic:"Cyber Ops",q:"Name the three types of cyberspace operations.",a:"<b>DODIN Operations</b> (secure/operate/maintain DoD networks), <b>DCO</b> (Defensive Cyberspace Operations), and <b>OCO</b> (Offensive Cyberspace Operations)."},
+{m:"114",mt:"Information & Cyberspace Operations",topic:"Cyber Ops",q:"Differentiate DCO-IDM and DCO-RA.",a:"<b>DCO-IDM</b> (Internal Defensive Measures) — actions within friendly 'blue' space to reconfigure/restore security. <b>DCO-RA</b> (Response Action) — actions in the space between blue and red (foreign cyberspace) to deny access; may rise to use of force."},
+{m:"114",mt:"Information & Cyberspace Operations",topic:"EW",q:"Name the three subdivisions of Electronic Warfare.",a:"<b>EA</b> (Electronic Attack), <b>EP</b> (Electronic Protection), and <b>ES</b> (Electronic Warfare Support)."},
+{m:"114",mt:"Information & Cyberspace Operations",topic:"EW",q:"What does ES feed into?",a:"Electronic Warfare Support feeds <b>SIGINT</b>, targeting for EA/destructive attack, and <b>MASINT</b> — searching, intercepting, identifying, and locating EM energy sources."},
+{m:"114",mt:"Information & Cyberspace Operations",topic:"EMCON",q:"Name the EMCON conditions from least to most restrictive.",a:"<b>Delta</b> (no restrictions) → <b>Charlie</b> (mission-essential only) → <b>Bravo</b> (further limited) → <b>Alpha</b> (no emissions — complete silence)."},
+{m:"114",mt:"Information & Cyberspace Operations",topic:"INFOCON",q:"Describe INFOCON 5 and INFOCON 1.",a:"<b>INFOCON 5</b> — no significant threats/activity. <b>INFOCON 1</b> — a successful attack with definite effect on DoD missions; widespread; mission failure risk."},
+{m:"114",mt:"Information & Cyberspace Operations",topic:"MILDEC",q:"What is the purpose of military deception (MILDEC)?",a:"To cause ambiguity/confusion about friendly capabilities, cause adversary misallocation of resources, make the adversary reveal strengths/intentions, condition exploitable patterns, and cause the adversary to waste combat power."},
+{m:"114",mt:"Information & Cyberspace Operations",topic:"RIVER CITY",q:"What is RIVER CITY?",a:"Procedures to <b>control outgoing communication paths</b> for OPSEC, impacting intel C2, communications, collection, and dissemination."},
+
+/* ---------- 115 Expeditionary ---------- */
+{m:"115",mt:"Expeditionary Warfare",topic:"NECC",q:"What is EOD's mission within NECC?",a:"<b>Explosive Ordnance Disposal</b> — locate, identify, render safe, and dispose of foreign/domestic ordnance (chem/bio/nuke/UW/IED); integrates with CCDR/SOF and supports military/civilian LE and the Secret Service."},
+{m:"115",mt:"Expeditionary Warfare",topic:"NEIC",q:"What is NEIC's mission?",a:"<b>Navy Expeditionary Intelligence Command</b> — provides timely, relevant, actionable intel to deny the enemy sanctuary, freedom of movement, and use of waterborne LOCs; enables find-fix-destroy."},
+{m:"115",mt:"Expeditionary Warfare",topic:"Amphibious",q:"Name the five phases of an amphibious operation.",a:"<b>1) Planning, 2) Embarkation, 3) Rehearsal, 4) Movement, 5) Action.</b>"},
+{m:"115",mt:"Expeditionary Warfare",topic:"Amphibious",q:"What do CATF and CLF stand for?",a:"<b>CATF</b> — Commander, Amphibious Task Force (Navy officer). <b>CLF</b> — Commander, Landing Force."},
+{m:"115",mt:"Expeditionary Warfare",topic:"MAGTF",q:"What does MAGTF stand for and what are its variants?",a:"<b>Marine Air Ground Task Force</b> — variants are the <b>MEF</b> (Expeditionary Force), <b>MEB</b> (Brigade), and <b>MEU</b> (Unit)."},
+{m:"115",mt:"Expeditionary Warfare",topic:"COIN",q:"Define insurgency.",a:"An organized movement aimed at overthrowing a constituted government through <b>subversion and armed conflict</b> — a protracted politico-military struggle to weaken government control/legitimacy."},
+{m:"115",mt:"Expeditionary Warfare",topic:"COIN",q:"What three elements of the OE must effective COIN intel understand?",a:"The <b>populace, host nation, and insurgents</b>. COIN intel is HUMINT-heavy."},
+
+/* ---------- 116 NSW ---------- */
+{m:"116",mt:"Naval Special Warfare",topic:"TSOC",q:"What is a TSOC and under whose OPCON do they fall?",a:"A <b>Theater Special Operations Command</b> — a subordinate unified command of USSOCOM. SecDef has assigned <b>OPCON</b> of TSOCs and attached SOF to the respective <b>GCC</b>."},
+{m:"116",mt:"Naval Special Warfare",topic:"Core Activities",q:"Name several SOF primary core activities.",a:"<b>Direct Action (DA), Special Reconnaissance (SR), Counterinsurgency (COIN), Counterterrorism (CT), Counter-WMD (CWMD), Foreign Internal Defense (FID), Hostage Rescue, Security Force Assistance (SFA), and Unconventional Warfare (UW).</b>"},
+{m:"116",mt:"Naval Special Warfare",topic:"Core Activities",q:"Define Unconventional Warfare (UW).",a:"Enabling a resistance or insurgency to coerce, disrupt, or overthrow a government via underground, auxiliary, and guerrilla forces in a denied area (e.g., Northern Alliance vs. Taliban)."},
+{m:"116",mt:"Naval Special Warfare",topic:"Intel Support",q:"Name the five intel support functions to targeting.",a:"<b>1) IPB, 2) Collection Management, 3) Support to Target Development, 4) Support to Target Detection, 5) Support to Combat Assessment.</b>"},
+{m:"116",mt:"Naval Special Warfare",topic:"WARCOM",q:"What is CNSWC (WARCOM)?",a:"A 2-star command at Coronado, CA, with <b>OPCON and ADCON</b> of active and reserve NSW forces in the US — man, train, equip, deploy, and sustain."},
+{m:"116",mt:"Naval Special Warfare",topic:"PE",q:"What is Preparation of the Environment (PE) and in which phase is it conducted?",a:"An umbrella for SOF operations/activities to develop the environment for future special ops — conducted in the <b>Shape phase</b> and to prepare for force entry. It supports Advance Force Operations (AFO)."},
+{m:"116",mt:"Naval Special Warfare",topic:"TIP",q:"Name several elements of an HVI Target Intelligence Packet (TIP).",a:"Biographic summary, target significance, reporting highlights, data/imagery of historical locations, analysis of likely COAs, intel indicators/observables, a collection plan, and the <b>LTIOV</b> (Latest Time Information of Value)."},
+{m:"116",mt:"Naval Special Warfare",topic:"SRT",q:"What do Special Reconnaissance Teams (SRT) do?",a:"ISR, Preparation of the Environment (PE), special technical ops, and sensitive activities — a cross-section of intel and ops staffed by SEAL, SWCC, and Navy IW personnel (SRT-1 west, SRT-2 east)."},
+
+/* ---------- 117 Comms / Intel Systems ---------- */
+{m:"117",mt:"Communication & Intelligence Systems",topic:"Networks",q:"What is the maximum classification of NIPRNET, SIPRNET, and JWICS?",a:"<b>NIPRNET</b> — Unclassified; <b>SIPRNET</b> — Secret; <b>JWICS</b> — TS/SCI (Joint Worldwide Intelligence Communications System)."},
+{m:"117",mt:"Communication & Intelligence Systems",topic:"Networks",q:"What is CENTRIXS used for?",a:"<b>Combined Enterprise Regional Information Exchange System</b> — US + coalition operational/intel sharing via bilateral/multilateral enclaves connecting 200+ organizations (chat/email/COTS)."},
+{m:"117",mt:"Communication & Intelligence Systems",topic:"Networks",q:"What is STONEGHOST?",a:"A highly secured network for <b>US/FVEY</b> (Five Eyes) data exchange, at the TS/SCI level."},
+{m:"117",mt:"Communication & Intelligence Systems",topic:"Data Links",q:"What replaced Link-11 and what is Link-16 used for?",a:"<b>Link-16</b> replaced the phased-out Link-11. Link-16 is a near-real-time NATO tactical data link letting aircraft/ships/ground exchange the picture, text, imagery, and digital voice."},
+{m:"117",mt:"Communication & Intelligence Systems",topic:"Intel Systems",q:"What is DCGS-N?",a:"<b>Distributed Common Ground System – Navy</b> — the Navy's primary ISR support system for intel product processing and dissemination (TS/SCI)."},
+{m:"117",mt:"Communication & Intelligence Systems",topic:"Intel Systems",q:"What does GCCS-M manage?",a:"The <b>Global Command & Control System – Maritime</b> manages the <b>Common Operational Picture (COP)</b>."},
+{m:"117",mt:"Communication & Intelligence Systems",topic:"CASREP",q:"What is the definition of a CASREP?",a:"An equipment/software malfunction or deficiency that, within the first 24 hours of discovery, cannot be corrected within <b>48 hours</b>."},
+{m:"117",mt:"Communication & Intelligence Systems",topic:"CASREP",q:"What do CASREP categories 1 through 4 mean?",a:"<b>CAT-1</b> training use only; <b>CAT-2</b> minor degradation to primary or major loss of secondary; <b>CAT-3</b> major degradation to primary; <b>CAT-4</b> complete loss of at least one primary system."},
+{m:"117",mt:"Communication & Intelligence Systems",topic:"CASREP",q:"What reporting system do CASREPs feed?",a:"<b>DRRS</b> — the Defense Readiness Reporting System."},
+
+/* ---------- 118 Collection Systems / Platforms ---------- */
+{m:"118",mt:"Collection Systems & Platforms",topic:"Orbits",q:"Match orbit to mission: LEO, MEO, GEO, HEO.",a:"<b>LEO</b> — manned, comms (Starlink/Iridium), imagery. <b>MEO</b> — SIGINT, GPS, missile warning. <b>GEO</b> — comms (Milstar/WGS), SIGINT, missile warning (DSP/SBIRS), weather. <b>HEO</b> — long dwell over high northern latitudes, comms/SIGINT/recon/missile warning."},
+{m:"118",mt:"Collection Systems & Platforms",topic:"Platforms",q:"What is the mission of the MQ-4C Triton?",a:"A Navy variant of the RQ-4 providing <b>theater-level maritime ISR</b> (HALE) with EO/IR, SAR, SIGINT, and comms relay."},
+{m:"118",mt:"Collection Systems & Platforms",topic:"Platforms",q:"What do the RC-135 S, U, and V/W variants do?",a:"<b>S = Cobra Ball</b> (tracks ballistic missiles), <b>U = Combat Sent</b> (TECHINT on adversary radar), <b>V/W = Rivet Joint</b> (SIGINT/electronic surveillance)."},
+{m:"118",mt:"Collection Systems & Platforms",topic:"Platforms",q:"What replaces the E-2C, and when is the E-2C phased out?",a:"The <b>E-2D Advanced Hawkeye</b> — the E-2C is phased out by <b>2026</b>."},
+{m:"118",mt:"Collection Systems & Platforms",topic:"MASINT",q:"What do Cobra Ball, Cobra King, and Cobra Dane collect?",a:"<b>Cobra Ball</b> (RC-135S) — optical/electronic data on ballistic targets during boost/re-entry. <b>Cobra King</b> — ship-based radar for treaty monitoring. <b>Cobra Dane</b> — land-based phased array on foreign BMs and space launches."},
+{m:"118",mt:"Collection Systems & Platforms",topic:"Undersea",q:"What is the difference between TASS and SURTASS-LFA?",a:"<b>TASS/TACTAS</b> — a passive towed array (~1 mile of mics behind the ship) to detect/classify/track quiet subs. <b>SURTASS-LFA</b> — combines passive SURTASS with active Low Frequency Active transmitters that echo sound off a sub hull."},
+{m:"118",mt:"Collection Systems & Platforms",topic:"OSINT/AIS",q:"Differentiate AIS and ADS-B.",a:"<b>AIS</b> — Automatic Identification System for large vessels (location/speed/identity, collision avoidance). <b>ADS-B</b> — Automatic Dependent Surveillance-Broadcast, the aircraft equivalent."},
+{m:"118",mt:"Collection Systems & Platforms",topic:"Coming Soon",q:"What are the MQ-25 Stingray and RQ-180?",a:"<b>MQ-25 Stingray</b> — a carrier-launched uncrewed aerial refueler. <b>RQ-180</b> — a stealth aircraft for contested airspace."},
+];
+
+/* ============================================================
+   APP LOGIC
+   ============================================================ */
+const $ = s=>document.querySelector(s);
+const $$ = s=>document.querySelectorAll(s);
+const LS = {
+  get k(){try{return JSON.parse(localStorage.getItem('pqs_known')||'[]')}catch(e){return[]}},
+  set k(v){localStorage.setItem('pqs_known',JSON.stringify([...new Set(v)]))},
+  get r(){try{return JSON.parse(localStorage.getItem('pqs_review')||'[]')}catch(e){return[]}},
+  set r(v){localStorage.setItem('pqs_review',JSON.stringify([...new Set(v)]))},
+  get theme(){return localStorage.getItem('pqs_theme')||'light'},
+  set theme(v){localStorage.setItem('pqs_theme',v)}
+};
+// stable id per card = module + index
+DATA.forEach((d,i)=>d.id = d.m+'-'+i);
+const MODULES = [...new Set(DATA.map(d=>d.m))].sort((a,b)=>+a-+b);
+const MODTITLE = {};
+DATA.forEach(d=>{ if(!MODTITLE[d.m]) MODTITLE[d.m]=d.mt; });
+
+$('#cardCount').textContent = DATA.length;
+
+/* ---- theme ---- */
+function applyTheme(){
+  const t = LS.theme;
+  document.documentElement.setAttribute('data-theme', t==='dark'?'dark':'light');
+  $('#themeBtn').textContent = t==='dark' ? '☀️ Light' : '🌙 Dark';
+}
+$('#themeBtn').onclick = ()=>{ LS.theme = LS.theme==='dark'?'light':'dark'; applyTheme(); };
+applyTheme();
+
+/* ---- tabs ---- */
+$$('.tab').forEach(t=>t.onclick=()=>{
+  $$('.tab').forEach(x=>x.classList.remove('active'));
+  $$('.panel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  $('#panel-'+t.dataset.tab).classList.add('active');
+});
+
+/* ---- helpers ---- */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function highlight(text, q){
+  if(!q) return text;
+  const terms = q.split(/\s+/).filter(t=>t.length>1).map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+  if(!terms.length) return text;
+  // operate on text outside tags
+  return text.replace(new RegExp('('+terms.join('|')+')','gi'), '<mark>$1</mark>');
+}
+function qaHTML(d, q){
+  const q_ = q ? highlight(esc(d.q), q) : esc(d.q);
+  const a_ = q ? highlight(d.a, q) : d.a; // a contains intentional <b> tags
+  return `<div class="qa">
+    <span class="modtag">${d.m}</span><span class="topic">${esc(d.mt)} · ${esc(d.topic)}</span>
+    <p class="q">${q_}</p><div class="a">${a_}</div></div>`;
+}
+
+/* ---- module chip builders ---- */
+function buildChips(container, state, onChange, includeAll){
+  container.innerHTML='';
+  if(includeAll){
+    const all=document.createElement('span');
+    all.className='chip allnone'; all.textContent='All / None';
+    all.onclick=()=>{
+      const anyOff = MODULES.some(m=>!state.has(m));
+      MODULES.forEach(m=> anyOff? state.add(m): state.delete(m));
+      render(); onChange&&onChange();
+    };
+    container.appendChild(all);
+  }
+  MODULES.forEach(m=>{
+    const c=document.createElement('span');
+    c.className='chip'+(state.has(m)?' on':'');
+    c.textContent=m;
+    c.title=MODTITLE[m];
+    c.onclick=()=>{ state.has(m)?state.delete(m):state.add(m); c.classList.toggle('on'); onChange&&onChange(); };
+    container.appendChild(c);
+  });
+  function render(){ container.querySelectorAll('.chip:not(.allnone)').forEach((c)=>{
+    c.classList.toggle('on', state.has(c.textContent)); }); }
+}
+
+/* =========== SEARCH =========== */
+const searchState = new Set(MODULES);
+function runSearch(){
+  const q = $('#searchInput').value.trim().toLowerCase();
+  let pool = DATA.filter(d=>searchState.has(d.m));
+  let res = pool;
+  if(q){
+    const terms = q.split(/\s+/).filter(Boolean);
+    res = pool.filter(d=>{
+      const hay = (d.q+' '+d.a+' '+d.mt+' '+d.topic+' '+d.m).toLowerCase();
+      return terms.every(t=>hay.includes(t));
+    });
+  }
+  $('#searchCount').textContent = q
+    ? `${res.length} result${res.length!==1?'s':''} for "${$('#searchInput').value.trim()}"`
+    : `Showing all ${res.length} items in selected modules`;
+  $('#searchResults').innerHTML = res.length
+    ? res.map(d=>qaHTML(d,q)).join('')
+    : `<div class="empty">No matches. Try a different keyword or widen your module filter.</div>`;
+}
+$('#searchInput').addEventListener('input', runSearch);
+buildChips($('#searchChips'), searchState, runSearch, true);
+runSearch();
+
+/* =========== FLASHCARDS =========== */
+const cardState = new Set(MODULES);
+let fcDeck=[], fcIdx=0, fcReviewOnly=false;
+function buildDeck(){
+  let pool = DATA.filter(d=>cardState.has(d.m));
+  if(fcReviewOnly){ const rev=new Set(LS.r); pool = pool.filter(d=>rev.has(d.id)); }
+  fcDeck = pool; fcIdx=0; renderCard();
+}
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[arr[i],arr[j]]=[arr[j],arr[i]];} }
+function renderCard(){
+  const fc=$('#flashcard'); fc.classList.remove('flipped');
+  const known=new Set(LS.k), rev=new Set(LS.r);
+  $('#fcKnownCount').textContent = known.size+' known';
+  $('#fcReviewCount').textContent = rev.size+' to review';
+  $('#fcDeckInfo').textContent = `${fcDeck.length} cards in deck`+(fcReviewOnly?' (review pile)':'');
+  if(!fcDeck.length){
+    $('#fcFront').textContent='No cards in this deck.';
+    $('#fcFrontLbl').textContent=''; $('#fcBack').textContent='Select modules above, or turn off "review pile only".';
+    $('#fcProg').textContent='0 / 0'; $('#fcBar').style.width='0%'; return;
+  }
+  const d=fcDeck[fcIdx];
+  $('#fcFrontLbl').innerHTML = `Module ${d.m} · ${esc(d.topic)}`;
+  $('#fcFront').textContent = d.q;
+  $('#fcBack').innerHTML = d.a;
+  $('#fcProg').textContent = `${fcIdx+1} / ${fcDeck.length}`;
+  $('#fcBar').style.width = ((fcIdx+1)/fcDeck.length*100)+'%';
+  // reflect mark state on buttons
+  $('#fcMarkKnown').style.outline = known.has(d.id)?'2px solid #fff':'';
+}
+$('#flashcard').onclick=()=>$('#flashcard').classList.toggle('flipped');
+$('#fcNext').onclick=()=>{ if(fcIdx<fcDeck.length-1){fcIdx++;renderCard();} };
+$('#fcPrev').onclick=()=>{ if(fcIdx>0){fcIdx--;renderCard();} };
+$('#fcShuffle').onclick=()=>{ shuffle(fcDeck); fcIdx=0; renderCard(); };
+$('#fcReviewOnly').onclick=function(){ fcReviewOnly=!fcReviewOnly; this.classList.toggle('gold',fcReviewOnly); buildDeck(); };
+$('#fcReset').onclick=()=>{ if(confirm('Reset all flashcard progress (known + review marks)?')){ LS.k=[];LS.r=[]; renderCard(); } };
+$('#fcMarkKnown').onclick=()=>{ if(!fcDeck.length)return; const d=fcDeck[fcIdx];
+  const k=LS.k; k.push(d.id); LS.k=k; const r=LS.r.filter(x=>x!==d.id); LS.r=r;
+  if(fcIdx<fcDeck.length-1){fcIdx++;} renderCard(); };
+$('#fcMarkReview').onclick=()=>{ if(!fcDeck.length)return; const d=fcDeck[fcIdx];
+  const r=LS.r; r.push(d.id); LS.r=r; const k=LS.k.filter(x=>x!==d.id); LS.k=k;
+  if(fcIdx<fcDeck.length-1){fcIdx++;} renderCard(); };
+buildChips($('#cardChips'), cardState, buildDeck, true);
+buildDeck();
+// keyboard nav (only when flashcard panel active)
+document.addEventListener('keydown',e=>{
+  if(!$('#panel-cards').classList.contains('active')) return;
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+  if(e.code==='Space'){e.preventDefault();$('#flashcard').classList.toggle('flipped');}
+  else if(e.code==='ArrowRight'){$('#fcNext').click();}
+  else if(e.code==='ArrowLeft'){$('#fcPrev').click();}
+});
+
+/* =========== BOARD QUIZ =========== */
+const boardState = new Set(MODULES);
+let bQueue=[], bPos=0, bGot=0, bMiss=0, bMissed=[], bTimerId=null, bTimeLeft=0;
+function updateBoardPoolInfo(){
+  const pool = $('#boardPool').value;
+  let avail = DATA.filter(d=>boardState.has(d.m));
+  if(pool==='review'){ const r=new Set(LS.r); avail=avail.filter(d=>r.has(d.id)); }
+  $('#boardPoolInfo').textContent = `${avail.length} question${avail.length!==1?'s':''} available`;
+}
+buildChips($('#boardChips'), boardState, updateBoardPoolInfo, true);
+$('#boardPool').onchange = updateBoardPoolInfo;
+updateBoardPoolInfo();
+
+$('#boardStart').onclick=()=>{
+  let pool = DATA.filter(d=>boardState.has(d.m));
+  if($('#boardPool').value==='review'){ const r=new Set(LS.r); pool=pool.filter(d=>r.has(d.id)); }
+  if(!pool.length){ alert('No questions available. Select more modules, or your review pile is empty.'); return; }
+  pool=[...pool]; shuffle(pool);
+  let n=parseInt($('#boardCount').value,10); if(n>0) pool=pool.slice(0,n);
+  bQueue=pool; bPos=0; bGot=0; bMiss=0; bMissed=[];
+  $('#boardSetup').style.display='none';
+  $('#boardResults').style.display='none';
+  $('#boardLive').style.display='block';
+  showBoardQ();
+};
+function clearTimer(){ if(bTimerId){clearInterval(bTimerId);bTimerId=null;} }
+function showBoardQ(){
+  clearTimer();
+  const d=bQueue[bPos];
+  $('#bQn').textContent = `Question ${bPos+1}`;
+  $('#bRemain').textContent = `${bQueue.length-bPos-1} remaining`;
+  $('#bGot').textContent = `✓ ${bGot} correct`;
+  $('#bMiss').textContent = `✗ ${bMiss} missed`;
+  $('#bModtag').textContent = `MOD ${d.m} · ${d.topic}`;
+  $('#bQuestion').textContent = d.q;
+  $('#bAnswerWrap').innerHTML='';
+  $('#bActions').innerHTML = '<button class="btn gold" id="bReveal">Reveal answer</button>';
+  $('#bReveal').onclick=revealBoard;
+  // timer
+  const t=parseInt($('#boardTimer').value,10);
+  const tEl=$('#bTimer');
+  if(t>0){
+    bTimeLeft=t; tEl.style.display='inline-block'; tEl.classList.remove('warn'); tEl.textContent=t;
+    bTimerId=setInterval(()=>{
+      bTimeLeft--; tEl.textContent=bTimeLeft;
+      if(bTimeLeft<=10) tEl.classList.add('warn');
+      if(bTimeLeft<=0){ clearTimer(); revealBoard(true); }
+    },1000);
+  } else { tEl.style.display='none'; }
+}
+function revealBoard(timedOut){
+  clearTimer();
+  const d=bQueue[bPos];
+  $('#bAnswerWrap').innerHTML =
+    `<div class="answer-box"><div class="lbl">${timedOut?'⏱ Time — Answer':'Answer'}</div>${d.a}</div>`;
+  $('#bActions').innerHTML =
+    '<div class="grade-row"><span style="align-self:center;color:var(--muted);font-size:13px;margin-right:4px">Grade yourself:</span>'+
+    '<button class="btn miss" id="bGradeMiss">✗ Missed it</button>'+
+    '<button class="btn got" id="bGradeGot">✓ Got it</button></div>';
+  $('#bGradeGot').onclick=()=>gradeBoard(true);
+  $('#bGradeMiss').onclick=()=>gradeBoard(false);
+}
+function gradeBoard(correct){
+  const d=bQueue[bPos];
+  if(correct){ bGot++; const k=LS.k;k.push(d.id);LS.k=k; const r=LS.r.filter(x=>x!==d.id);LS.r=r; }
+  else { bMiss++; bMissed.push(d); const r=LS.r;r.push(d.id);LS.r=r; }
+  bPos++;
+  if(bPos>=bQueue.length) finishBoard();
+  else showBoardQ();
+}
+$('#boardQuit').onclick=()=>{ if(confirm('End this board early?')){ clearTimer(); finishBoard(); } };
+function finishBoard(){
+  clearTimer();
+  $('#boardLive').style.display='none';
+  $('#boardResults').style.display='block';
+  const total=bGot+bMiss;
+  const pct = total? Math.round(bGot/total*100):0;
+  $('#rPct').textContent = pct+'%';
+  let grade, msg;
+  if(pct>=90){grade='Outstanding — Board Ready';msg='Sharp recall across the board. You could sit a real qual board.';}
+  else if(pct>=80){grade='Strong Pass';msg='Solid grasp. Drill the few misses and you are set.';}
+  else if(pct>=70){grade='Pass — Keep Studying';msg='Foundational knowledge is there; tighten up the gaps.';}
+  else if(pct>=50){grade='Needs Work';msg='Review the missed items and run the deck again.';}
+  else {grade='Below Standard';msg='Hit the flashcards and browse mode, then re-test.';}
+  $('#rGrade').textContent=grade;
+  $('#rMsg').textContent=`${msg} (${bGot}/${total} correct)`;
+  if(bMissed.length){
+    $('#rMissedList').innerHTML = '<h4>Review your missed questions ('+bMissed.length+'):</h4>'+
+      bMissed.map(d=>qaHTML(d,'')).join('');
+    $('#rReviewMissed').style.display='inline-block';
+  } else {
+    $('#rMissedList').innerHTML='<p style="color:var(--good);font-weight:600">Clean sweep — no missed questions! 🎖️</p>';
+    $('#rReviewMissed').style.display='none';
+  }
+  updateBoardPoolInfo();
+}
+$('#rAgain').onclick=()=>{ $('#boardResults').style.display='none'; $('#boardSetup').style.display='block'; updateBoardPoolInfo(); };
+$('#rReviewMissed').onclick=()=>{
+  if(!bMissed.length)return;
+  bQueue=[...bMissed]; shuffle(bQueue); bPos=0;bGot=0;bMiss=0;bMissed=[];
+  $('#boardResults').style.display='none'; $('#boardLive').style.display='block'; showBoardQ();
+};
+
+/* =========== BROWSE =========== */
+function buildBrowse(filter){
+  filter=(filter||'').trim().toLowerCase();
+  const wrap=$('#browseList'); wrap.innerHTML='';
+  MODULES.forEach(m=>{
+    let items=DATA.filter(d=>d.m===m);
+    if(filter){
+      items=items.filter(d=>(d.q+' '+d.a+' '+d.topic+' '+d.mt).toLowerCase().includes(filter));
+    }
+    if(!items.length) return;
+    const acc=document.createElement('div');
+    acc.className='acc'+(filter?' open':'');
+    acc.innerHTML=`<div class="acc-h"><span><span class="arrow">▸</span> Module ${m} — ${esc(MODTITLE[m])}</span><span class="n">${items.length}</span></div>
+      <div class="acc-body">${items.map(d=>qaHTML(d,filter)).join('')}</div>`;
+    acc.querySelector('.acc-h').onclick=()=>acc.classList.toggle('open');
+    wrap.appendChild(acc);
+  });
+  if(!wrap.children.length) wrap.innerHTML='<div class="empty">No topics match that filter.</div>';
+}
+$('#browseFilter').addEventListener('input',e=>buildBrowse(e.target.value));
+$('#expandAll').onclick=()=>$$('#browseList .acc').forEach(a=>a.classList.add('open'));
+$('#collapseAll').onclick=()=>$$('#browseList .acc').forEach(a=>a.classList.remove('open'));
+buildBrowse('');
+</script>
+</body>
+</html>
