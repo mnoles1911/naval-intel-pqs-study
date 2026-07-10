@@ -12,10 +12,14 @@ couple can view or edit their plan.
 
 - **Next.js 16** (App Router) with **React 19** and **TypeScript**
 - **Tailwind CSS v4** for styling
-- **Prisma 6** ORM with **SQLite** locally and **Postgres** in production
+- **Prisma 6** ORM with **PostgreSQL**
+- **Vercel Blob** for photo storage in the cloud (local filesystem fallback in dev)
 - Simple **shared-password auth** via a signed session cookie
 
-## Getting started
+## Getting started (local)
+
+Local development needs a PostgreSQL database. Point `DATABASE_URL` at any
+Postgres instance (a local one, or reuse your hosted one).
 
 ```bash
 # 1. Install dependencies
@@ -23,10 +27,10 @@ npm install
 
 # 2. Configure environment variables
 cp .env.example .env
-# then edit .env and set APP_PASSWORD and SESSION_SECRET
+# then edit .env and set DATABASE_URL, APP_PASSWORD, and SESSION_SECRET
 
-# 3. Create the local database
-npx prisma migrate dev
+# 3. Create the database schema
+npm run db:push
 
 # 4. Load sample locations and items
 npm run db:seed
@@ -36,17 +40,19 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and log in with the value
-you set for `APP_PASSWORD`.
+you set for `APP_PASSWORD`. With no `BLOB_READ_WRITE_TOKEN` set, uploaded photos
+are written to `public/uploads` locally.
 
 ## Environment variables
 
 Copy `.env.example` to `.env` and fill in the following:
 
-| Variable         | Description                                                         |
-| ---------------- | ------------------------------------------------------------------- |
-| `DATABASE_URL`   | Prisma datasource connection string (SQLite file locally, Postgres in production). |
-| `APP_PASSWORD`   | The shared password the couple uses to log in.                      |
-| `SESSION_SECRET` | Secret used to sign the session cookie. Use a long random string.   |
+| Variable                | Description                                                                       |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| `DATABASE_URL`          | PostgreSQL connection string. On Vercel, set automatically by the Postgres integration. |
+| `APP_PASSWORD`          | The shared password the couple uses to log in.                                    |
+| `SESSION_SECRET`        | Secret used to sign the session cookie. Use a long random string.                 |
+| `BLOB_READ_WRITE_TOKEN` | (Cloud only) Set automatically by Vercel when Blob storage is added. Photos go to Vercel Blob when present; otherwise to `public/uploads`. |
 
 ## Data model
 
@@ -73,16 +79,19 @@ their `locationId` is set back to null (Unassigned), so nothing is lost.
 - `src/app/(app)/` — authenticated pages: dashboard, locations, and items
 - `src/components/` — shared UI components
 
-## Deployment notes
+## Deploying to Vercel
 
-To take the planner online:
+The app is ready to deploy to Vercel. The build command
+(`prisma generate && prisma db push && next build`) creates the database schema
+automatically on each deploy, and the photo upload route uses Vercel Blob when
+`BLOB_READ_WRITE_TOKEN` is present.
 
-1. Switch the Prisma datasource `provider` to `postgresql` and point
-   `DATABASE_URL` at a hosted Postgres database (e.g. Neon or Supabase).
-2. Replace the local filesystem photo upload in
-   `src/app/api/upload/route.ts` with a blob store (e.g. Vercel Blob) —
-   serverless filesystems are read-only, so writing uploaded photos to disk
-   will not work.
-3. Set `APP_PASSWORD` and `SESSION_SECRET` as environment variables in your
-   hosting provider.
-4. Deploy to **Vercel**.
+1. Push this repository to GitHub and import it into **Vercel**
+   ([vercel.com/new](https://vercel.com/new)).
+2. In the project's **Storage** tab, add a **Postgres** database and a **Blob**
+   store. Vercel injects `DATABASE_URL` and `BLOB_READ_WRITE_TOKEN` for you.
+3. In **Settings → Environment Variables**, add `APP_PASSWORD` (your login
+   password) and `SESSION_SECRET` (a long random string).
+4. Deploy. Once live, open the URL and log in with `APP_PASSWORD`.
+5. (Optional) Load sample data by running `npm run db:seed` locally against the
+   production `DATABASE_URL`.

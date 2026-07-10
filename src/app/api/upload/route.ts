@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
+import { put } from "@vercel/blob";
 import { requireApiAuth } from "@/lib/auth";
 
-// Node runtime required for filesystem access.
+// Node runtime required for filesystem access in the local-dev fallback.
 export const runtime = "nodejs";
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
@@ -22,10 +23,11 @@ const EXT: Record<string, string> = {
 };
 
 // POST /api/upload — multipart form with a single "file" field.
-// Saves to public/uploads and returns { url }.
+// Returns { url }.
 //
-// NOTE: writing to the local filesystem works for local dev. For a serverless
-// deployment (e.g. Vercel) swap this for a blob store and return its URL.
+// In the cloud (Vercel), photos are stored in Vercel Blob when
+// BLOB_READ_WRITE_TOKEN is present. For local development (no token) the file
+// is written to public/uploads instead.
 export async function POST(request: Request) {
   const unauth = await requireApiAuth();
   if (unauth) return unauth;
@@ -48,11 +50,21 @@ export async function POST(request: Request) {
     );
   }
 
-  const bytes = Buffer.from(await file.arrayBuffer());
   const filename = `${randomUUID()}.${EXT[file.type]}`;
+
+  // Cloud path: store in Vercel Blob.
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`items/${filename}`, file, {
+      access: "public",
+      contentType: file.type,
+    });
+    return NextResponse.json({ url: blob.url });
+  }
+
+  // Local-dev fallback: write to public/uploads.
+  const bytes = Buffer.from(await file.arrayBuffer());
   const uploadDir = path.join(process.cwd(), "public", "uploads");
   await mkdir(uploadDir, { recursive: true });
   await writeFile(path.join(uploadDir, filename), bytes);
-
   return NextResponse.json({ url: `/uploads/${filename}` });
 }
