@@ -34,21 +34,19 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex-1 flex items-center justify-center px-4 py-16">
+    <main className="flex flex-1 items-center justify-center px-4 py-16">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-semibold tracking-tight">
+        <div className="mb-8 text-center">
+          <p className="eyebrow">Just the two of us</p>
+          <h1 className="font-display mt-1 text-3xl">
             Wedding Placement Planner
           </h1>
-          <p className="text-muted text-sm mt-2">
+          <p className="mt-2 text-sm text-muted">
             Enter the password to continue.
           </p>
         </div>
-        <form
-          onSubmit={handleSubmit}
-          className="bg-card border border-border rounded-xl p-6 shadow-sm"
-        >
-          <label htmlFor="password" className="block text-sm font-medium mb-2">
+        <form onSubmit={handleSubmit} className="card p-6">
+          <label htmlFor="password" className="label">
             Password
           </label>
           <input
@@ -57,18 +55,18 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoFocus
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 outline-none focus:border-accent"
+            className="input"
             placeholder="••••••••"
           />
           {error && (
-            <p className="text-sm text-red-500 mt-3" role="alert">
+            <p className="mt-3 text-sm text-danger" role="alert">
               {error}
             </p>
           )}
           <button
             type="submit"
             disabled={loading || password.length === 0}
-            className="mt-5 w-full rounded-lg bg-accent text-white font-medium py-2 disabled:opacity-50 transition"
+            className="btn btn-primary mt-5 w-full"
           >
             {loading ? "Signing in…" : "Sign in"}
           </button>

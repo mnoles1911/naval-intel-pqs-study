@@ -33,7 +33,7 @@ export default function PhotoUpload({
   return (
     <div>
       <div className="flex items-start gap-4">
-        <div className="h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-border bg-background flex items-center justify-center">
+        <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-surface-2">
           {value ? (
             <Image
               src={value}
@@ -63,7 +63,7 @@ export default function PhotoUpload({
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-background disabled:opacity-50"
+            className="btn btn-ghost btn-sm"
           >
             {uploading ? "Uploading…" : value ? "Replace photo" : "Upload photo"}
           </button>
@@ -71,14 +71,14 @@ export default function PhotoUpload({
             <button
               type="button"
               onClick={() => onChange(null)}
-              className="text-sm text-muted hover:text-red-500 text-left"
+              className="text-left text-sm text-muted transition-colors hover:text-danger cursor-pointer"
             >
               Remove
             </button>
           )}
         </div>
       </div>
-      {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
     </div>
   );
 }
