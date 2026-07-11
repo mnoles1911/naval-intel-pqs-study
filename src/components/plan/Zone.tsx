@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { UNASSIGNED } from "@/lib/constants";
 import type { ItemDTO, LocationDTO } from "@/lib/types";
 import ItemChip, { DRAG_MIME } from "@/components/plan/ItemChip";
 import { accentColor, purchasedProgress } from "@/components/plan/planUtils";
@@ -52,6 +53,9 @@ export default function Zone({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      // Touch-drop target: encodes the same value the HTML5 drop resolves to
+      // (a location id, or the UNASSIGNED sentinel for the Unassigned zone).
+      data-drop-id={locationId ?? UNASSIGNED}
       aria-label={`${name} zone, ${total} ${total === 1 ? "item" : "items"}`}
       className={`card card-hover flex flex-col p-4 transition ${
         isOver ? "border-accent ring-2 ring-[var(--ring)]" : ""

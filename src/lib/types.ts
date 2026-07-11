@@ -14,6 +14,8 @@ export interface LocationDTO {
   color: string | null;
   planX: number | null;
   planY: number | null;
+  planW: number | null;
+  planH: number | null;
   sortOrder: number;
   shape: TableShape;
   seatCount: number;
@@ -32,6 +34,9 @@ export interface ItemDTO {
   vendorUrl: string | null;
   notes: string | null;
   photoUrl: string | null;
+  photoUrls: string[];
+  planX: number | null;
+  planY: number | null;
   locationId: string | null;
   createdAt: string;
 }

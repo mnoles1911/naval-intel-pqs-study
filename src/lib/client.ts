@@ -32,6 +32,8 @@ export interface LocationInput {
   color?: string | null;
   planX?: number | null;
   planY?: number | null;
+  planW?: number | null;
+  planH?: number | null;
   sortOrder?: number;
   shape?: TableShape;
   seatCount?: number;
@@ -82,6 +84,9 @@ export interface ItemInput {
   vendorUrl?: string | null;
   notes?: string | null;
   photoUrl?: string | null;
+  photoUrls?: string[];
+  planX?: number | null;
+  planY?: number | null;
   locationId?: string | null;
 }
 
@@ -135,6 +140,26 @@ export function bulkCreateItems(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ items }),
+  }).then((r) => handle<{ count: number }>(r));
+}
+
+// Apply one patch to many items at once (bulk actions on a selection).
+export function bulkUpdateItems(
+  ids: string[],
+  patch: Pick<ItemInput, "status" | "locationId" | "category" | "priority">,
+): Promise<{ count: number }> {
+  return fetch("/api/items/bulk-update", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids, patch }),
+  }).then((r) => handle<{ count: number }>(r));
+}
+
+export function bulkDeleteItems(ids: string[]): Promise<{ count: number }> {
+  return fetch("/api/items/bulk-delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids }),
   }).then((r) => handle<{ count: number }>(r));
 }
 

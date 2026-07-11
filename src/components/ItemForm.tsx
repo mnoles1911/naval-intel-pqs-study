@@ -52,8 +52,8 @@ export default function ItemForm({ mode, itemId, initial }: ItemFormProps) {
   );
   const [vendorUrl, setVendorUrl] = useState<string>(initial?.vendorUrl ?? "");
   const [notes, setNotes] = useState<string>(initial?.notes ?? "");
-  const [photoUrl, setPhotoUrl] = useState<string | null>(
-    initial?.photoUrl ?? null,
+  const [photoUrls, setPhotoUrls] = useState<string[]>(
+    initial?.photoUrls ?? (initial?.photoUrl ? [initial.photoUrl] : []),
   );
   const [locationValue, setLocationValue] = useState<string>(
     initial?.locationId ?? UNASSIGNED,
@@ -105,7 +105,7 @@ export default function ItemForm({ mode, itemId, initial }: ItemFormProps) {
       vendorName: vendorName.trim() ? vendorName.trim() : null,
       vendorUrl: vendorUrl.trim() ? vendorUrl.trim() : null,
       notes: notes.trim() ? notes.trim() : null,
-      photoUrl,
+      photoUrls,
       locationId,
     };
     try {
@@ -301,8 +301,8 @@ export default function ItemForm({ mode, itemId, initial }: ItemFormProps) {
       </div>
 
       <div>
-        <span className="label">Photo</span>
-        <PhotoUpload value={photoUrl} onChange={setPhotoUrl} />
+        <span className="label">Photos</span>
+        <PhotoUpload value={photoUrls} onChange={setPhotoUrls} />
       </div>
 
       {error && <p className="text-sm text-danger">{error}</p>}

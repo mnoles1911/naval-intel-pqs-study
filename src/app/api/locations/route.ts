@@ -49,8 +49,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { name, description, color, planX, planY, sortOrder, shape, seatCount } =
-    (body ?? {}) as Record<string, unknown>;
+  const {
+    name,
+    description,
+    color,
+    planX,
+    planY,
+    planW,
+    planH,
+    sortOrder,
+    shape,
+    seatCount,
+  } = (body ?? {}) as Record<string, unknown>;
   if (typeof name !== "string" || name.trim().length === 0) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
@@ -72,6 +82,8 @@ export async function POST(request: Request) {
       color: str(color),
       planX: toFraction(planX),
       planY: toFraction(planY),
+      planW: toFraction(planW),
+      planH: toFraction(planH),
       sortOrder:
         typeof sortOrder === "number" && Number.isInteger(sortOrder)
           ? sortOrder

@@ -27,6 +27,10 @@ model Location {
   // Null until the couple places the zone on the plan.
   planX       Float?
   planY       Float?
+  // Size of the marker on the map (0..1 fractions of the canvas). Null uses a
+  // sensible default; the user can resize a marker to override.
+  planW       Float?
+  planH       Float?
   // Manual ordering for the plan board / setup sheets (lower shows first).
   sortOrder   Int      @default(0)
   // Seating: a Location doubles as a table. Its shape is one of TABLE_SHAPES
@@ -114,7 +118,14 @@ model Item {
   vendorUrl   String?
   // Free-form planning notes (setup instructions, reminders, etc.).
   notes       String?
+  // Cover photo (kept in sync with the first of photoUrls) plus the full
+  // gallery of photos for this item.
   photoUrl    String?
+  photoUrls   String[]  @default([])
+  // Optional free position on the venue map (0..1 fractions of the canvas).
+  // Null until the item is placed on the map.
+  planX       Float?
+  planY       Float?
   location    Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
   locationId  String?
   createdAt   DateTime  @default(now())

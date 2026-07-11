@@ -4,6 +4,7 @@ import { useState } from "react";
 import { UNASSIGNED } from "@/lib/constants";
 import type { ItemDTO, LocationDTO } from "@/lib/types";
 import { STATUS_COLOR } from "@/components/plan/planUtils";
+import { useTouchDrag } from "@/lib/useTouchDrag";
 
 // The value passed on drop: a real location id, or the UNASSIGNED sentinel.
 export const DRAG_MIME = "text/plain";
@@ -27,6 +28,21 @@ export default function ItemChip({
 
   const currentValue = item.locationId ?? UNASSIGNED;
 
+  // Touch path: mirrors the HTML5 drag. dropId is a location id or the
+  // UNASSIGNED sentinel (encoded on each Zone via data-drop-id).
+  const bindTouchDrag = useTouchDrag({
+    onDrop: (itemId, dropId) =>
+      onReassign(itemId, dropId === UNASSIGNED ? null : dropId),
+    onDragStart: (itemId) => {
+      setDragging(true);
+      onDragStateChange?.(itemId, true);
+    },
+    onDragEnd: (itemId) => {
+      setDragging(false);
+      onDragStateChange?.(itemId, false);
+    },
+  });
+
   function handleDragStart(e: React.DragEvent) {
     e.dataTransfer.setData(DRAG_MIME, item.id);
     e.dataTransfer.effectAllowed = "move";
@@ -49,7 +65,8 @@ export default function ItemChip({
       draggable
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      className={`group flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-2 py-1.5 text-sm transition ${
+      {...bindTouchDrag(item.id)}
+      className={`group flex touch-none items-center gap-2 rounded-lg border border-border bg-surface-2 px-2 py-1.5 text-sm transition ${
         dragging ? "opacity-40" : "hover:border-border-strong"
       }`}
     >

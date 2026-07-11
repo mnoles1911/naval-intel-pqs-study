@@ -38,8 +38,18 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { name, description, color, planX, planY, sortOrder, shape, seatCount } =
-    (body ?? {}) as Record<string, unknown>;
+  const {
+    name,
+    description,
+    color,
+    planX,
+    planY,
+    planW,
+    planH,
+    sortOrder,
+    shape,
+    seatCount,
+  } = (body ?? {}) as Record<string, unknown>;
   const data: Record<string, unknown> = {};
 
   if (name !== undefined) {
@@ -52,6 +62,8 @@ export async function PATCH(request: Request, { params }: Params) {
   if (color !== undefined) data.color = str(color);
   if (planX !== undefined) data.planX = toFraction(planX);
   if (planY !== undefined) data.planY = toFraction(planY);
+  if (planW !== undefined) data.planW = toFraction(planW);
+  if (planH !== undefined) data.planH = toFraction(planH);
   if (sortOrder !== undefined) {
     const n =
       typeof sortOrder === "number" ? sortOrder : Number(sortOrder);

@@ -38,6 +38,22 @@ function str(value: unknown): string | null {
     : null;
 }
 
+// Normalize a photo gallery: an array of non-empty string URLs.
+function photoList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (v): v is string => typeof v === "string" && v.trim().length > 0,
+  );
+}
+
+// Clamp a 0..1 map coordinate to a number, or null when absent/invalid.
+function toFrac(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.min(1, Math.max(0, n));
+}
+
 // POST /api/items — create an item.
 export async function POST(request: Request) {
   const unauth = await requireApiAuth();
@@ -61,6 +77,9 @@ export async function POST(request: Request) {
     vendorUrl,
     notes,
     photoUrl,
+    photoUrls,
+    planX,
+    planY,
     locationId,
   } = (body ?? {}) as Record<string, unknown>;
 
@@ -99,6 +118,10 @@ export async function POST(request: Request) {
     resolvedLocationId = locationId;
   }
 
+  const gallery = photoList(photoUrls);
+  const cover =
+    gallery[0] ?? (typeof photoUrl === "string" && photoUrl ? photoUrl : null);
+
   const item = await prisma.item.create({
     data: {
       name: name.trim(),
@@ -110,7 +133,10 @@ export async function POST(request: Request) {
       vendorName: str(vendorName),
       vendorUrl: str(vendorUrl),
       notes: str(notes),
-      photoUrl: typeof photoUrl === "string" && photoUrl ? photoUrl : null,
+      photoUrl: cover,
+      photoUrls: gallery,
+      planX: toFrac(planX),
+      planY: toFrac(planY),
       locationId: resolvedLocationId,
     },
   });
