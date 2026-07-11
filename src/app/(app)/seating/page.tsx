@@ -33,6 +33,7 @@ import { buildWarnings } from "@/components/seating/seatingView";
 import PlanBar from "@/components/seating/PlanBar";
 import GuestRoster from "@/components/seating/GuestRoster";
 import CsvPanel from "@/components/seating/CsvPanel";
+import ZolaSyncPanel from "@/components/seating/ZolaSyncPanel";
 import SeatingChart from "@/components/seating/SeatingChart";
 import VenueMap from "@/components/seating/VenueMap";
 
@@ -436,13 +437,16 @@ export default function SeatingPage() {
               onLink={linkGuests}
               onUnlink={unlinkGuest}
             />
-            {activePlan && (
-              <CsvPanel
-                planId={activePlan.id}
-                planName={activePlan.name}
-                onImported={onImported}
-              />
-            )}
+            <div className="flex flex-col gap-4">
+              {activePlan && (
+                <CsvPanel
+                  planId={activePlan.id}
+                  planName={activePlan.name}
+                  onImported={onImported}
+                />
+              )}
+              <ZolaSyncPanel onSynced={onImported} />
+            </div>
           </div>
         </>
       )}

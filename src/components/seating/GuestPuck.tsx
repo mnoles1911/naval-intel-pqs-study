@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { UNASSIGNED } from "@/lib/constants";
+import {
+  UNASSIGNED,
+  RSVP_STATUS_COLOR,
+  RSVP_STATUS_LABELS,
+  isRsvpStatus,
+} from "@/lib/constants";
 import type { LocationDTO, PartyDTO, PersonDTO } from "@/lib/types";
 import { GUEST_MIME, partyColorFor } from "./seatingUtils";
 import { useTouchDrag } from "@/lib/useTouchDrag";
@@ -41,6 +46,19 @@ export default function GuestPuck({
   const color = partyColorFor(person, parties);
   const party = person.partyId ? parties.get(person.partyId) : undefined;
   const separated = warning?.separated ?? false;
+
+  // RSVP: fall back to PENDING for any unexpected value from the API.
+  const rsvp = isRsvpStatus(person.rsvpStatus) ? person.rsvpStatus : "PENDING";
+  const rsvpLabel = RSVP_STATUS_LABELS[rsvp];
+  const rsvpColor = RSVP_STATUS_COLOR[rsvp];
+
+  // Rich hover tooltip: name, any split-party warning, then RSVP details.
+  const titleParts = [person.name];
+  if (separated && warning?.text) titleParts.push(warning.text);
+  titleParts.push(`RSVP: ${rsvpLabel}`);
+  if (person.mealChoice) titleParts.push(`Meal: ${person.mealChoice}`);
+  if (person.dietaryNotes) titleParts.push(`Dietary: ${person.dietaryNotes}`);
+  const title = titleParts.join(" · ");
 
   // Touch path: dropId is UNASSIGNED (unseat), a table id, or `${tableId}:${seatIndex}`
   // for a specific seat — resolved via data-drop-id on the seating targets.
@@ -93,11 +111,7 @@ export default function GuestPuck({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       {...bindTouchDrag(person.id)}
-      title={
-        separated && warning?.text
-          ? `${person.name} — ${warning.text}`
-          : person.name
-      }
+      title={title}
       className={`group flex touch-none items-center gap-2 rounded-lg border bg-surface-2 px-2 py-1.5 text-sm transition ${
         separated ? "border-danger" : "border-border hover:border-border-strong"
       } ${dragging ? "opacity-40" : ""}`}
@@ -118,6 +132,24 @@ export default function GuestPuck({
       <span className="min-w-0 flex-1 truncate" title={person.name}>
         {person.name}
       </span>
+
+      {/* RSVP status dot — color per status, labelled for screen readers. */}
+      <span
+        className="dot shrink-0"
+        style={{ background: rsvpColor }}
+        role="img"
+        aria-label={rsvpLabel}
+        title={rsvpLabel}
+      />
+
+      {person.mealChoice && (
+        <span
+          className="max-w-[5rem] shrink-0 truncate text-xs text-muted"
+          title={`Meal: ${person.mealChoice}`}
+        >
+          {person.mealChoice}
+        </span>
+      )}
 
       {separated && (
         <span className="shrink-0 text-danger" title={warning?.text} aria-label="Party is split across tables">
