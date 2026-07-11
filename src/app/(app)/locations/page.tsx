@@ -17,6 +17,13 @@ import {
   fetchItems,
   updateItem,
 } from "@/lib/client";
+import {
+  PlusIcon,
+  MinusIcon,
+  PencilIcon,
+  TrashIcon,
+  CheckIcon,
+} from "@/components/icons";
 
 const DEFAULT_SHAPE: TableShape = "ROUND";
 const DEFAULT_SEATS = 8;
@@ -447,6 +454,7 @@ export default function LocationsPage() {
           disabled={saving || !name.trim()}
           className="btn btn-primary"
         >
+          <PlusIcon size={16} />
           {saving ? "Adding…" : "Add location"}
         </button>
       </form>
@@ -463,6 +471,7 @@ export default function LocationsPage() {
               </p>
             </div>
             <button type="button" onClick={openBulk} className="btn btn-ghost">
+              <PlusIcon size={16} />
               Add tables in bulk
             </button>
           </div>
@@ -561,6 +570,7 @@ export default function LocationsPage() {
                 disabled={bulkSaving}
                 className="btn btn-primary"
               >
+                <PlusIcon size={16} />
                 {bulkSaving ? "Adding…" : `Add ${Math.max(0, Math.round(bulkCount))} tables`}
               </button>
               <button
@@ -667,6 +677,7 @@ export default function LocationsPage() {
                         disabled={editSaving || !editName.trim()}
                         className="btn btn-primary"
                       >
+                        <CheckIcon size={16} />
                         {editSaving ? "Saving…" : "Save"}
                       </button>
                       <button
@@ -711,7 +722,7 @@ export default function LocationsPage() {
                                 aria-label={`Remove a seat from ${loc.name}`}
                                 className="grid h-6 w-6 place-items-center rounded-full text-foreground transition-colors hover:bg-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                               >
-                                −
+                                <MinusIcon size={14} />
                               </button>
                               <span className="min-w-[3.5rem] text-center text-xs font-medium tabular-nums">
                                 {loc.seatCount}{" "}
@@ -727,7 +738,7 @@ export default function LocationsPage() {
                                 aria-label={`Add a seat to ${loc.name}`}
                                 className="grid h-6 w-6 place-items-center rounded-full text-foreground transition-colors hover:bg-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                               >
-                                +
+                                <PlusIcon size={14} />
                               </button>
                             </span>
                             <span className="text-sm text-muted">
@@ -742,6 +753,7 @@ export default function LocationsPage() {
                           onClick={() => startEdit(loc)}
                           className="btn btn-ghost btn-sm"
                         >
+                          <PencilIcon size={14} />
                           Edit
                         </button>
                         <button
@@ -749,6 +761,7 @@ export default function LocationsPage() {
                           onClick={() => handleDelete(loc)}
                           className="btn btn-danger btn-sm"
                         >
+                          <TrashIcon size={14} />
                           Delete
                         </button>
                       </div>

@@ -18,9 +18,27 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Wedding Placement Planner",
+  metadataBase: new URL("https://naval-intel-pqs-study.vercel.app"),
+  title: {
+    default: "Wedding Placement Planner",
+    template: "%s · Placement Planner",
+  },
   description:
-    "Plan where every decor and stationery item goes at the wedding.",
+    "Plan where every decor and stationery item goes, and seat every guest, for Matt & Emma's wedding.",
+  applicationName: "Placement Planner",
+  openGraph: {
+    title: "Matt & Emma — Wedding Placement Planner",
+    description:
+      "Plan where every decor and stationery item goes, and seat every guest.",
+    siteName: "Placement Planner",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Matt & Emma — Wedding Placement Planner",
+    description:
+      "Plan where every decor and stationery item goes, and seat every guest.",
+  },
 };
 
 export default function RootLayout({
