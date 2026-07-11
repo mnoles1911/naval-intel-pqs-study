@@ -18,11 +18,8 @@ import {
   updateItem,
   updateLocation,
 } from "@/lib/client";
-import BoardView from "@/components/plan/BoardView";
 import MapView from "@/components/plan/MapView";
 import { clamp01 } from "@/components/plan/planUtils";
-
-type View = "board" | "map";
 
 export default function PlanWorkspace() {
   const [locations, setLocations] = useState<LocationDTO[]>([]);
@@ -33,7 +30,6 @@ export default function PlanWorkspace() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [view, setView] = useState<View>("board");
 
   useEffect(() => {
     let active = true;
@@ -72,40 +68,6 @@ export default function PlanWorkspace() {
       active = false;
     };
   }, []);
-
-  // Reassign an item to a location (or null for Unassigned). Optimistic: move
-  // the chip immediately, then revert just that item's location on failure.
-  const reassignItem = useCallback(
-    async (itemId: string, locationId: string | null) => {
-      const target = items.find((it) => it.id === itemId);
-      if (!target || target.locationId === locationId) return;
-      const previousLocationId = target.locationId;
-
-      setActionError(null);
-      setItems((cur) =>
-        cur.map((it) => (it.id === itemId ? { ...it, locationId } : it)),
-      );
-
-      try {
-        const updated = await updateItem(itemId, { locationId });
-        setItems((cur) => cur.map((it) => (it.id === itemId ? updated : it)));
-      } catch (err) {
-        setItems((cur) =>
-          cur.map((it) =>
-            it.id === itemId
-              ? { ...it, locationId: previousLocationId }
-              : it,
-          ),
-        );
-        setActionError(
-          err instanceof Error
-            ? `Couldn't move "${target.name}": ${err.message}`
-            : `Couldn't move "${target.name}".`,
-        );
-      }
-    },
-    [items],
-  );
 
   // Persist a location's map position. Optimistic with per-field revert.
   const moveLocation = useCallback(
@@ -218,32 +180,10 @@ export default function PlanWorkspace() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <p className="text-sm text-muted">
-          Drag items between locations to assign them, or arrange your venue on
-          the map.
-        </p>
-
-        <div
-          role="tablist"
-          aria-label="Plan view"
-          className="inline-flex rounded-lg border border-border bg-surface p-0.5"
-        >
-          {(["board", "map"] as const).map((v) => (
-            <button
-              key={v}
-              role="tab"
-              aria-selected={view === v}
-              onClick={() => setView(v)}
-              className={`btn btn-sm rounded-md capitalize ${
-                view === v ? "btn-primary" : "btn-ghost border-transparent"
-              }`}
-            >
-              {v}
-            </button>
-          ))}
-        </div>
-      </header>
+      <p className="text-sm text-muted">
+        Arrange your venue: drag tables and areas to lay out the room, resize
+        them, and drop items onto the map.
+      </p>
 
       {actionError && (
         <div
@@ -271,16 +211,10 @@ export default function PlanWorkspace() {
         <div className="toile-veil card p-10 text-center">
           <h2 className="font-display text-lg">Nothing to place yet</h2>
           <p className="mx-auto mt-1 max-w-sm text-sm text-muted">
-            Add some locations and items first — then you can drag them into
-            place here.
+            Add some locations and items first — then you can arrange them on
+            the map here.
           </p>
         </div>
-      ) : view === "board" ? (
-        <BoardView
-          locations={locations}
-          items={items}
-          onReassign={reassignItem}
-        />
       ) : (
         <MapView
           locations={locations}

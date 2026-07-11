@@ -5,6 +5,7 @@ import { UNASSIGNED } from "@/lib/constants";
 import type { ItemDTO, LocationDTO } from "@/lib/types";
 import ItemChip, { DRAG_MIME } from "@/components/plan/ItemChip";
 import { accentColor, purchasedProgress } from "@/components/plan/planUtils";
+import { PencilIcon } from "@/components/icons";
 
 interface Props {
   // null represents the Unassigned zone.
@@ -14,6 +15,7 @@ interface Props {
   items: ItemDTO[];
   allLocations: LocationDTO[];
   onReassign: (itemId: string, locationId: string | null) => void;
+  onManage?: (locationId: string) => void;
 }
 
 export default function Zone({
@@ -23,6 +25,7 @@ export default function Zone({
   items,
   allLocations,
   onReassign,
+  onManage,
 }: Props) {
   const [isOver, setIsOver] = useState(false);
   const isUnassigned = locationId === null;
@@ -81,6 +84,16 @@ export default function Zone({
           <span className="chip ml-auto shrink-0">
             {total} {total === 1 ? "item" : "items"}
           </span>
+          {onManage && locationId != null && (
+            <button
+              type="button"
+              onClick={() => onManage(locationId)}
+              aria-label={`Manage ${name}`}
+              className="btn btn-ghost btn-sm shrink-0"
+            >
+              <PencilIcon size={14} />
+            </button>
+          )}
         </div>
 
         {total > 0 && (

@@ -17,13 +17,8 @@ import {
   fetchItems,
   updateItem,
 } from "@/lib/client";
-import {
-  PlusIcon,
-  MinusIcon,
-  PencilIcon,
-  TrashIcon,
-  CheckIcon,
-} from "@/components/icons";
+import { PlusIcon, TrashIcon, CheckIcon, CloseIcon } from "@/components/icons";
+import BoardView from "@/components/plan/BoardView";
 
 const DEFAULT_SHAPE: TableShape = "ROUND";
 const DEFAULT_SEATS = 8;
@@ -190,6 +185,7 @@ export default function LocationsManager() {
   const [loading, setLoading] = useState(true);
 
   // Add-form state
+  const [addOpen, setAddOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState<string | null>(null);
@@ -222,11 +218,6 @@ export default function LocationsManager() {
 
   // Item-assignment state
   const [itemError, setItemError] = useState<string | null>(null);
-  const [busyItemId, setBusyItemId] = useState<string | null>(null);
-
-  // Inline seat stepper state
-  const [seatBusyId, setSeatBusyId] = useState<string | null>(null);
-  const [seatError, setSeatError] = useState<string | null>(null);
 
   async function load() {
     const [locs, its] = await Promise.all([fetchLocations(), fetchItems()]);
@@ -256,20 +247,7 @@ export default function LocationsManager() {
     };
   }, []);
 
-  function countItems(locationId: string): number {
-    return items.filter((it) => it.locationId === locationId).length;
-  }
-
-  function locationName(locationId: string): string {
-    return locations.find((l) => l.id === locationId)?.name ?? "Unknown";
-  }
-
-  function placementLabel(item: ItemDTO): string {
-    return item.locationId ? locationName(item.locationId) : "Unassigned";
-  }
-
   async function assignItem(itemId: string, locationId: string | null) {
-    setBusyItemId(itemId);
     setItemError(null);
     try {
       await updateItem(itemId, { locationId });
@@ -278,35 +256,6 @@ export default function LocationsManager() {
       setItemError(
         err instanceof Error ? err.message : "Failed to move item.",
       );
-    } finally {
-      setBusyItemId(null);
-    }
-  }
-
-  // Bump a table's seat count up or down in place (clamped 1..40), persisting
-  // immediately. Optimistic so the number responds instantly.
-  async function adjustSeats(loc: LocationDTO, delta: number) {
-    const next = clampSeats(loc.seatCount + delta);
-    if (next === loc.seatCount) return;
-    setSeatBusyId(loc.id);
-    setSeatError(null);
-    setLocations((prev) =>
-      prev.map((l) => (l.id === loc.id ? { ...l, seatCount: next } : l)),
-    );
-    try {
-      await updateLocation(loc.id, { seatCount: next });
-    } catch (err) {
-      // Roll back the optimistic change on failure.
-      setLocations((prev) =>
-        prev.map((l) =>
-          l.id === loc.id ? { ...l, seatCount: loc.seatCount } : l,
-        ),
-      );
-      setSeatError(
-        err instanceof Error ? err.message : "Failed to update seats.",
-      );
-    } finally {
-      setSeatBusyId(null);
     }
   }
 
@@ -331,6 +280,7 @@ export default function LocationsManager() {
       setSeatable(true);
       setShape(DEFAULT_SHAPE);
       setSeatCount(DEFAULT_SEATS);
+      setAddOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add location.");
     } finally {
@@ -443,6 +393,7 @@ export default function LocationsManager() {
     try {
       await deleteLocation(loc.id);
       await load();
+      cancelEdit();
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to delete location.",
@@ -458,57 +409,101 @@ export default function LocationsManager() {
         either way you can assign items to it.
       </p>
 
-      {/* Add location form */}
-      <form onSubmit={handleAdd} className="card space-y-4 p-5">
-        <div>
-          <label htmlFor="name" className="label">
-            Name
-          </label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Head table"
-            className="input"
-          />
-        </div>
-        <div>
-          <label htmlFor="description" className="label">
-            Description <span className="text-muted">(optional)</span>
-          </label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={2}
-            placeholder="Any notes about this location"
-            className="input"
-          />
-        </div>
-        <div>
-          <span className="label">Color</span>
-          <ColorPicker value={color} onChange={setColor} />
-        </div>
-        <TableSettingsFields
-          seatable={seatable}
-          onSeatableChange={setSeatable}
-          shape={shape}
-          onShapeChange={setShape}
-          seatCount={seatCount}
-          onSeatCountChange={setSeatCount}
-          idPrefix="add-shape"
-        />
-        {error && <p className="text-sm text-danger">{error}</p>}
-        <button
-          type="submit"
-          disabled={saving || !name.trim()}
-          className="btn btn-primary"
-        >
-          <PlusIcon size={16} />
-          {saving ? "Adding…" : "Add location"}
-        </button>
-      </form>
+      {/* Create prompt */}
+      <div className="card p-5">
+        {!addOpen ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-medium">Add a location</h2>
+              <p className="text-sm text-muted">
+                Create a seated table or a no-seat area you can assign items to.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setAddOpen(true);
+              }}
+              className="btn btn-primary"
+            >
+              <PlusIcon size={16} />
+              Add a location
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleAdd} className="space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="font-medium">Add a location</h2>
+              <button
+                type="button"
+                onClick={() => setAddOpen(false)}
+                aria-label="Close add form"
+                className="btn btn-ghost btn-sm shrink-0"
+              >
+                <CloseIcon size={16} />
+              </button>
+            </div>
+            <div>
+              <label htmlFor="name" className="label">
+                Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Head table"
+                className="input"
+              />
+            </div>
+            <div>
+              <label htmlFor="description" className="label">
+                Description <span className="text-muted">(optional)</span>
+              </label>
+              <textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+                placeholder="Any notes about this location"
+                className="input"
+              />
+            </div>
+            <div>
+              <span className="label">Color</span>
+              <ColorPicker value={color} onChange={setColor} />
+            </div>
+            <TableSettingsFields
+              seatable={seatable}
+              onSeatableChange={setSeatable}
+              shape={shape}
+              onShapeChange={setShape}
+              seatCount={seatCount}
+              onSeatCountChange={setSeatCount}
+              idPrefix="add-shape"
+            />
+            {error && <p className="text-sm text-danger">{error}</p>}
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={saving || !name.trim()}
+                className="btn btn-primary"
+              >
+                <PlusIcon size={16} />
+                {saving ? "Adding…" : "Add location"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setAddOpen(false)}
+                className="btn btn-ghost"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
 
       {/* Bulk add tables */}
       <div className="card p-5">
@@ -668,7 +663,7 @@ export default function LocationsManager() {
         </div>
       )}
 
-      {/* List */}
+      {/* Board */}
       {loading ? (
         <p className="text-sm text-muted">Loading locations…</p>
       ) : locations.length === 0 ? (
@@ -676,245 +671,120 @@ export default function LocationsManager() {
           No locations yet — add your first above.
         </p>
       ) : (
-        <ul className="space-y-4">
-          {locations.map((loc) => {
-            const isEditing = editingId === loc.id;
-            const count = countItems(loc.id);
-            const assignedItems = items.filter(
-              (it) => it.locationId === loc.id,
-            );
-            const assignableItems = items.filter(
-              (it) => it.locationId !== loc.id,
-            );
-            return (
-              <li key={loc.id} className="card p-4">
-                {isEditing ? (
-                  <form
-                    onSubmit={(e) => handleUpdate(e, loc.id)}
-                    className="space-y-4"
-                  >
-                    <div>
-                      <label
-                        htmlFor={`edit-name-${loc.id}`}
-                        className="label"
-                      >
-                        Name
-                      </label>
-                      <input
-                        id={`edit-name-${loc.id}`}
-                        type="text"
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        className="input"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor={`edit-description-${loc.id}`}
-                        className="label"
-                      >
-                        Description{" "}
-                        <span className="text-muted">(optional)</span>
-                      </label>
-                      <textarea
-                        id={`edit-description-${loc.id}`}
-                        value={editDescription}
-                        onChange={(e) => setEditDescription(e.target.value)}
-                        rows={2}
-                        className="input"
-                      />
-                    </div>
-                    <div>
-                      <span className="label">Color</span>
-                      <ColorPicker value={editColor} onChange={setEditColor} />
-                    </div>
-                    <TableSettingsFields
-                      seatable={editSeatable}
-                      onSeatableChange={setEditSeatable}
-                      shape={editShape}
-                      onShapeChange={setEditShape}
-                      seatCount={editSeatCount}
-                      onSeatCountChange={setEditSeatCount}
-                      idPrefix={`edit-shape-${loc.id}`}
-                    />
-                    {editError && (
-                      <p className="text-sm text-danger">{editError}</p>
-                    )}
-                    <div className="flex gap-2">
-                      <button
-                        type="submit"
-                        disabled={editSaving || !editName.trim()}
-                        className="btn btn-primary"
-                      >
-                        <CheckIcon size={16} />
-                        {editSaving ? "Saving…" : "Save"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={cancelEdit}
-                        className="btn btn-ghost"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3">
-                        <span
-                          className="mt-1 h-3.5 w-3.5 shrink-0 rounded-full"
-                          style={{ background: loc.color ?? "var(--accent)" }}
-                        />
-                        <div className="space-y-1">
-                          <h2 className="font-medium">{loc.name}</h2>
-                          {loc.description && (
-                            <p className="text-sm text-muted">
-                              {loc.description}
-                            </p>
-                          )}
-                          <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                            {loc.seatable ? (
-                              <>
-                                <span className="chip">
-                                  {TABLE_SHAPE_LABELS[loc.shape]}
-                                </span>
-                                <span
-                                  className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 p-0.5"
-                                  aria-label={`${loc.name} seats`}
-                                >
-                                  <button
-                                    type="button"
-                                    onClick={() => adjustSeats(loc, -1)}
-                                    disabled={
-                                      seatBusyId === loc.id ||
-                                      loc.seatCount <= MIN_SEATS
-                                    }
-                                    aria-label={`Remove a seat from ${loc.name}`}
-                                    className="grid h-6 w-6 place-items-center rounded-full text-foreground transition-colors hover:bg-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                                  >
-                                    <MinusIcon size={14} />
-                                  </button>
-                                  <span className="min-w-[3.5rem] text-center text-xs font-medium tabular-nums">
-                                    {loc.seatCount}{" "}
-                                    {loc.seatCount === 1 ? "seat" : "seats"}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => adjustSeats(loc, 1)}
-                                    disabled={
-                                      seatBusyId === loc.id ||
-                                      loc.seatCount >= MAX_SEATS
-                                    }
-                                    aria-label={`Add a seat to ${loc.name}`}
-                                    className="grid h-6 w-6 place-items-center rounded-full text-foreground transition-colors hover:bg-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                                  >
-                                    <PlusIcon size={14} />
-                                  </button>
-                                </span>
-                              </>
-                            ) : (
-                              <span className="chip">Area · no seats</span>
-                            )}
-                            <span className="text-sm text-muted">
-                              {count} {count === 1 ? "item" : "items"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex shrink-0 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => startEdit(loc)}
-                          className="btn btn-ghost btn-sm"
-                        >
-                          <PencilIcon size={14} />
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(loc)}
-                          className="btn btn-danger btn-sm"
-                        >
-                          <TrashIcon size={14} />
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Assigned items */}
-                    <div className="space-y-2 border-t border-border pt-3">
-                      <span className="label">Items at this table</span>
-                      {assignedItems.length === 0 ? (
-                        <p className="text-sm text-muted">
-                          No items assigned yet.
-                        </p>
-                      ) : (
-                        <ul className="flex flex-wrap gap-2">
-                          {assignedItems.map((it) => (
-                            <li
-                              key={it.id}
-                              className="chip inline-flex items-center gap-2"
-                            >
-                              <span>
-                                {it.name}{" "}
-                                <span className="text-muted">
-                                  ×{it.quantity}
-                                </span>
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => assignItem(it.id, null)}
-                                disabled={busyItemId === it.id}
-                                aria-label={`Remove ${it.name} from ${loc.name}`}
-                                className="text-danger hover:opacity-80 disabled:opacity-50 cursor-pointer"
-                              >
-                                Remove
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-
-                      {/* Assign control */}
-                      {assignableItems.length > 0 && (
-                        <div>
-                          <label
-                            htmlFor={`assign-${loc.id}`}
-                            className="sr-only"
-                          >
-                            Assign an item to {loc.name}
-                          </label>
-                          <select
-                            id={`assign-${loc.id}`}
-                            value=""
-                            disabled={busyItemId !== null}
-                            onChange={(e) => {
-                              const itemId = e.target.value;
-                              if (itemId) assignItem(itemId, loc.id);
-                            }}
-                            className="input"
-                          >
-                            <option value="">Assign an item…</option>
-                            {assignableItems.map((it) => (
-                              <option key={it.id} value={it.id}>
-                                {it.name} ({placementLabel(it)})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <BoardView
+          locations={locations}
+          items={items}
+          onReassign={assignItem}
+          onManage={(id) => {
+            const loc = locations.find((l) => l.id === id);
+            if (loc) startEdit(loc);
+          }}
+        />
       )}
 
       {itemError && <p className="text-sm text-danger">{itemError}</p>}
-      {seatError && <p className="text-sm text-danger">{seatError}</p>}
+
+      {/* Edit modal */}
+      {editingId != null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Manage location"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+          <div
+            aria-hidden
+            onClick={cancelEdit}
+            className="absolute inset-0 bg-black/40"
+          />
+          <div className="card relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto p-5">
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <h2 className="font-medium">Manage location</h2>
+              <button
+                type="button"
+                onClick={cancelEdit}
+                aria-label="Close"
+                className="btn btn-ghost btn-sm shrink-0"
+              >
+                <CloseIcon size={16} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => handleUpdate(e, editingId)}
+              className="space-y-4"
+            >
+              <div>
+                <label htmlFor="edit-name" className="label">
+                  Name
+                </label>
+                <input
+                  id="edit-name"
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label htmlFor="edit-description" className="label">
+                  Description <span className="text-muted">(optional)</span>
+                </label>
+                <textarea
+                  id="edit-description"
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  rows={2}
+                  className="input"
+                />
+              </div>
+              <div>
+                <span className="label">Color</span>
+                <ColorPicker value={editColor} onChange={setEditColor} />
+              </div>
+              <TableSettingsFields
+                seatable={editSeatable}
+                onSeatableChange={setEditSeatable}
+                shape={editShape}
+                onShapeChange={setEditShape}
+                seatCount={editSeatCount}
+                onSeatCountChange={setEditSeatCount}
+                idPrefix="edit-shape"
+              />
+              {editError && (
+                <p className="text-sm text-danger">{editError}</p>
+              )}
+              <div className="flex flex-wrap gap-2 border-t border-border pt-4">
+                <button
+                  type="submit"
+                  disabled={editSaving || !editName.trim()}
+                  className="btn btn-primary"
+                >
+                  <CheckIcon size={16} />
+                  {editSaving ? "Saving…" : "Save"}
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="btn btn-ghost"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const loc = locations.find((l) => l.id === editingId);
+                    if (loc) handleDelete(loc);
+                  }}
+                  className="btn btn-danger ml-auto"
+                >
+                  <TrashIcon size={16} />
+                  Delete
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
