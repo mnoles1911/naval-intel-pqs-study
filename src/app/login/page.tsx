@@ -35,7 +35,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="toile-veil relative flex flex-1 items-center justify-center px-4 py-16">
+    <main className="relative flex flex-1 items-center justify-center px-4 py-16">
       <div className="absolute right-4 top-4">
         <ThemeToggle />
       </div>

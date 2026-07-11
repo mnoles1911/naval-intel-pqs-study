@@ -51,6 +51,11 @@
   --shadow-md: 0 6px 20px -8px rgba(28, 40, 58, 0.2);
   --shadow-lg: 0 18px 48px -18px rgba(28, 40, 58, 0.3);
   --radius: 0.85rem;
+
+  /* Toile wallpaper: the pattern image + a translucent wash of the page color
+     (lower the second number to make the toile stronger). */
+  --toile: url("/patterns/toile-white.png");
+  --toile-wash: color-mix(in srgb, var(--background) 85%, transparent);
 }
 
 /* Dark — system preference */
@@ -84,6 +89,7 @@
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 8px 24px -10px rgba(0, 0, 0, 0.55);
     --shadow-lg: 0 20px 50px -18px rgba(0, 0, 0, 0.6);
+    --toile: url("/patterns/toile-navy.png");
   }
 }
 
@@ -111,6 +117,7 @@
   --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
   --shadow-md: 0 8px 24px -10px rgba(0,0,0,.55);
   --shadow-lg: 0 20px 50px -18px rgba(0,0,0,.6);
+  --toile: url("/patterns/toile-navy.png");
 }
 
 @theme inline {
@@ -144,10 +151,19 @@
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  /* Faint E&M coastal toile wallpaper across the whole app: a translucent wash
+     of the page color laid over the toile so the pattern reads at ~15%. Cards
+     sit on opaque surfaces, so text always lands on a solid ground. Light theme
+     uses the blue-on-white toile; dark uses the white-on-navy toile. */
+  background-color: var(--background);
+  background-image:
+    linear-gradient(var(--toile-wash), var(--toile-wash)),
+    var(--toile);
+  background-repeat: repeat;
+  background-size: auto, 560px auto;
 }
 
 /* Serif display headings. Apply `.font-display` for the editorial look. */
@@ -267,11 +283,9 @@ body {
 }
 
 /*
- * E&M coastal toile veil — a faint on-brand pattern wash behind hero/empty
- * areas. Drop the two PNGs into public/patterns/ and it lights up; until then
- * it degrades gracefully to the plain background (a missing background-image
- * simply shows nothing). Light theme uses the blue-on-white toile; dark uses
- * the white-on-navy toile. Kept faint so it never fights body text.
+ * .toile-veil — an optional STRONGER local patch of the toile (used on the
+ * login hero). The whole-app wallpaper lives on `body` above; this just lifts
+ * the pattern a little in a hero area. Content sits above via position.
  */
 .toile-veil { position: relative; isolation: isolate; }
 .toile-veil::before {
@@ -280,23 +294,9 @@ body {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: url("/patterns/toile-white.png");
+  background-image: var(--toile);
   background-repeat: repeat;
-  background-size: 620px auto;
-  opacity: 0.08;
+  background-size: 560px auto;
+  opacity: 0.12;
 }
 .toile-veil > * { position: relative; }
-@media (prefers-color-scheme: dark) {
-  .toile-veil::before {
-    background-image: url("/patterns/toile-navy.png");
-    opacity: 0.1;
-  }
-}
-:root[data-theme="light"] .toile-veil::before {
-  background-image: url("/patterns/toile-white.png");
-  opacity: 0.07;
-}
-:root[data-theme="dark"] .toile-veil::before {
-  background-image: url("/patterns/toile-navy.png");
-  opacity: 0.1;
-}
