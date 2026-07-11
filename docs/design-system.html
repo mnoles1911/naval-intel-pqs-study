@@ -1,0 +1,568 @@
+<style>
+  /* ============================================================
+     Wedding Planner — Design System
+     A living reference. Every token name and component class below
+     matches src/app/globals.css, so a restyle maps back 1:1.
+     Intended faces: Cormorant Garamond (display) + Inter (body),
+     self-hosted in the app via next/font. Here they degrade to
+     graceful system stacks (webfont CDNs are blocked in this render).
+     ============================================================ */
+
+  :root {
+    /* Surfaces */
+    --background: #f6f2ea;
+    --surface: #fffdf9;
+    --surface-2: #f1ebe0;
+    --foreground: #2a2622;
+    --muted: #8a8178;
+    --border: #e6ddcf;
+    --border-strong: #d8ccb8;
+    /* Accents */
+    --accent: #a9834e;
+    --accent-hover: #916e3e;
+    --accent-soft: #f0e6d4;
+    --on-accent: #fffdf9;
+    --rose: #b98a8a;
+    --sage: #8a9a7b;
+    --ink-blue: #5f7488;
+    /* Status */
+    --needed: #b8823a;
+    --purchased: #5f7488;
+    --ready: #6f8f6a;
+    --danger: #b4534b;
+    /* Effects */
+    --ring: color-mix(in srgb, var(--accent) 45%, transparent);
+    --shadow-sm: 0 1px 2px rgba(51, 41, 28, 0.05);
+    --shadow-md: 0 6px 20px -8px rgba(51, 41, 28, 0.18);
+    --shadow-lg: 0 18px 48px -18px rgba(51, 41, 28, 0.28);
+    --radius: 0.85rem;
+
+    --font-display: "Cormorant Garamond", "Iowan Old Style",
+      "Palatino Linotype", Palatino, Georgia, serif;
+    --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+      Helvetica, Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #17150f;
+      --surface: #201d16;
+      --surface-2: #2a261d;
+      --foreground: #efe9dd;
+      --muted: #a79d8d;
+      --border: #322d22;
+      --border-strong: #423b2c;
+      --accent: #d8b078;
+      --accent-hover: #e6c390;
+      --accent-soft: #33291b;
+      --on-accent: #1a160f;
+      --rose: #cfa1a1;
+      --sage: #a6b795;
+      --ink-blue: #90a6bb;
+      --needed: #d6a659;
+      --purchased: #90a6bb;
+      --ready: #93b58c;
+      --danger: #e0857c;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 8px 24px -10px rgba(0, 0, 0, 0.55);
+      --shadow-lg: 0 20px 50px -18px rgba(0, 0, 0, 0.6);
+    }
+  }
+  /* Explicit toggle overrides the media query in both directions. */
+  :root[data-theme="light"] {
+    --background: #f6f2ea; --surface: #fffdf9; --surface-2: #f1ebe0;
+    --foreground: #2a2622; --muted: #8a8178; --border: #e6ddcf;
+    --border-strong: #d8ccb8; --accent: #a9834e; --accent-hover: #916e3e;
+    --accent-soft: #f0e6d4; --on-accent: #fffdf9; --rose: #b98a8a;
+    --sage: #8a9a7b; --ink-blue: #5f7488; --needed: #b8823a;
+    --purchased: #5f7488; --ready: #6f8f6a; --danger: #b4534b;
+    --shadow-sm: 0 1px 2px rgba(51,41,28,.05);
+    --shadow-md: 0 6px 20px -8px rgba(51,41,28,.18);
+    --shadow-lg: 0 18px 48px -18px rgba(51,41,28,.28);
+  }
+  :root[data-theme="dark"] {
+    --background: #17150f; --surface: #201d16; --surface-2: #2a261d;
+    --foreground: #efe9dd; --muted: #a79d8d; --border: #322d22;
+    --border-strong: #423b2c; --accent: #d8b078; --accent-hover: #e6c390;
+    --accent-soft: #33291b; --on-accent: #1a160f; --rose: #cfa1a1;
+    --sage: #a6b795; --ink-blue: #90a6bb; --needed: #d6a659;
+    --purchased: #90a6bb; --ready: #93b58c; --danger: #e0857c;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
+    --shadow-md: 0 8px 24px -10px rgba(0,0,0,.55);
+    --shadow-lg: 0 20px 50px -18px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 68rem; margin: 0 auto; padding: 0 1.5rem 6rem; }
+
+  /* ---- Design-system component classes (mirror of globals.css) ---- */
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    text-wrap: balance;
+  }
+  .eyebrow {
+    text-transform: uppercase; letter-spacing: 0.18em;
+    font-size: 0.7rem; font-weight: 600; color: var(--muted);
+  }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.5rem; border-radius: 0.5rem; padding: 0.5rem 1rem;
+    font-size: 0.875rem; font-weight: 500; border: 0; cursor: pointer;
+    font-family: inherit; transition: background-color .15s, color .15s;
+  }
+  .btn-primary { background: var(--accent); color: var(--on-accent); }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-ghost {
+    background: transparent; color: var(--foreground);
+    border: 1px solid var(--border-strong);
+  }
+  .btn-ghost:hover { background: var(--surface-2); }
+  .btn-danger {
+    background: transparent; color: var(--danger);
+    border: 1px solid var(--border-strong);
+  }
+  .btn-danger:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); }
+  .btn-sm { padding: 0.25rem 0.625rem; font-size: 0.75rem; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  }
+  .input {
+    width: 100%; border-radius: 0.5rem; padding: 0.5rem 0.75rem;
+    font-size: 0.875rem; background: var(--surface);
+    border: 1px solid var(--border-strong); color: var(--foreground);
+    font-family: inherit;
+  }
+  .input:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+  .label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    border-radius: 999px; padding: 0.125rem 0.625rem;
+    font-size: 0.75rem; font-weight: 500;
+    background: var(--surface-2); color: var(--muted);
+  }
+  .dot { display: inline-block; height: 0.5rem; width: 0.5rem; border-radius: 999px; }
+  .meter {
+    position: relative; height: 0.5rem; width: 100%;
+    overflow: hidden; border-radius: 999px; background: var(--surface-2);
+  }
+  .meter > span {
+    position: absolute; inset: 0 auto 0 0; border-radius: 999px;
+    background: var(--accent);
+  }
+
+  /* ---- Document chrome ---- */
+  .topbar {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--surface) 85%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-in {
+    max-width: 68rem; margin: 0 auto; padding: 0.75rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  }
+  .brandmark {
+    display: inline-grid; place-items: center; height: 2rem; width: 2rem;
+    border-radius: 999px; background: var(--accent-soft); color: var(--accent);
+    font-family: var(--font-display); font-size: 1.15rem; line-height: 1;
+  }
+  .toggle {
+    border: 1px solid var(--border-strong); background: var(--surface);
+    color: var(--foreground); border-radius: 999px; padding: 0.3rem 0.8rem;
+    font-size: 0.8rem; cursor: pointer; font-family: inherit;
+  }
+  .hero { padding: 3.5rem 0 2rem; border-bottom: 1px solid var(--border); }
+  .hero h1 { font-size: clamp(2.4rem, 6vw, 3.6rem); margin: 0.4rem 0 0.6rem; }
+  .lede { color: var(--muted); max-width: 42rem; font-size: 1.05rem; }
+
+  section { padding: 3rem 0; border-bottom: 1px solid var(--border); }
+  .rule-gold { height: 2px; width: 2.5rem; background: var(--accent); border-radius: 2px; margin-bottom: 1rem; }
+  h2.sec { font-size: 1.9rem; margin: 0.25rem 0 0.4rem; }
+  .sec-note { color: var(--muted); max-width: 44rem; margin: 0 0 1.75rem; }
+  h3.sub { font-size: 1rem; letter-spacing: 0.01em; margin: 2rem 0 0.9rem; }
+
+  .grid { display: grid; gap: 1rem; }
+  .swatches { grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); }
+  .swatch { border: 1px solid var(--border); border-radius: 0.7rem; overflow: hidden; background: var(--surface); }
+  .swatch .chipcolor { height: 3.6rem; }
+  .swatch .meta { padding: 0.5rem 0.65rem; }
+  .swatch .name { font-size: 0.8rem; font-weight: 600; }
+  .swatch .val { font-size: 0.72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .demo {
+    display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;
+    padding: 1.25rem; border: 1px dashed var(--border-strong);
+    border-radius: var(--radius); background: var(--surface-2);
+  }
+  .stack { display: flex; flex-direction: column; gap: 0.75rem; }
+  .row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+
+  .specimen .d1 { font-size: 3rem; line-height: 1.05; }
+  .specimen .d2 { font-size: 2rem; line-height: 1.1; }
+  .specimen .d3 { font-size: 1.375rem; }
+  .specimen .body { font-size: 1rem; max-width: 34rem; }
+  .specimen .small { font-size: 0.8rem; color: var(--muted); }
+  .type-meta { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+
+  table.tokens { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  table.tokens th, table.tokens td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); }
+  table.tokens th { color: var(--muted); font-weight: 600; }
+  table.tokens code { font-size: 0.8rem; color: var(--accent); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    border-radius: 999px; padding: 0.15rem 0.6rem; font-size: 0.75rem; font-weight: 600;
+  }
+  .badge-needed { background: color-mix(in srgb, var(--needed) 15%, var(--surface)); color: var(--needed); }
+  .badge-purchased { background: color-mix(in srgb, var(--purchased) 15%, var(--surface)); color: var(--purchased); }
+
+  /* Table markers preview (round + rect with seat squares) */
+  .venue { position: relative; height: 15rem; border: 1px solid var(--border); border-radius: var(--radius);
+    background: repeating-linear-gradient(0deg, transparent, transparent 1.4rem, color-mix(in srgb, var(--border) 45%, transparent) 1.4rem, color-mix(in srgb, var(--border) 45%, transparent) calc(1.4rem + 1px)),
+    repeating-linear-gradient(90deg, transparent, transparent 1.4rem, color-mix(in srgb, var(--border) 45%, transparent) 1.4rem, color-mix(in srgb, var(--border) 45%, transparent) calc(1.4rem + 1px)); }
+  .marker { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; }
+  .table-round, .table-rect { position: relative; border: 2px solid; display: grid; place-items: center;
+    font-family: var(--font-display); font-size: 0.85rem; }
+  .table-round { height: 5.5rem; width: 5.5rem; border-radius: 999px; }
+  .table-rect { height: 4rem; width: 6.5rem; border-radius: 0.5rem; }
+  .seat { position: absolute; height: 0.7rem; width: 0.7rem; border-radius: 2px; border: 1px solid var(--border-strong); background: var(--surface); transform: translate(-50%, -50%); }
+  .seat.filled { background: var(--sage); border-color: var(--sage); }
+
+  .alert { display: flex; gap: 0.6rem; align-items: flex-start; border-radius: 0.6rem; padding: 0.7rem 0.9rem; font-size: 0.875rem;
+    border: 1px solid var(--danger); background: color-mix(in srgb, var(--danger) 9%, transparent); color: var(--danger); }
+
+  .cols { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+  @media (min-width: 46rem) { .cols.two { grid-template-columns: 1fr 1fr; } }
+
+  ul.asks { margin: 0; padding-left: 1.1rem; }
+  ul.asks li { margin: 0.4rem 0; }
+  a { color: var(--accent); }
+  code.inline { background: var(--surface-2); padding: 0.1rem 0.35rem; border-radius: 0.3rem; font-size: 0.82em; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div style="display:flex;align-items:center;gap:0.65rem;">
+      <span class="brandmark" aria-hidden="true">&amp;</span>
+      <strong class="font-display" style="font-size:1.1rem;">Placement Planner — Design System</strong>
+    </div>
+    <button class="toggle" id="themeToggle" type="button">Toggle theme</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <p class="eyebrow">Living reference · for the design pass</p>
+    <h1 class="font-display">The paper, the palette, the pieces.</h1>
+    <p class="lede">
+      This is the working design system for a couple's private wedding
+      placement &amp; seating planner. Every token and component below mirrors
+      <code class="inline">src/app/globals.css</code> by the same name — so a
+      refreshed <code class="inline">globals.css</code> restyles the whole app
+      with little component churn. Treat this as the canvas: keep the class
+      names, elevate everything else.
+    </p>
+  </header>
+
+  <!-- BRAND -->
+  <section>
+    <div class="rule-gold"></div>
+    <p class="eyebrow">01 · Direction</p>
+    <h2 class="sec font-display">An editorial, wedding-stationery feel</h2>
+    <p class="sec-note">
+      Warm ivory paper, ink text, an antique-gold accent, and a serif display
+      face paired with a clean sans. It should feel personal and celebratory —
+      fine paper and letterpress, not a corporate dashboard — while staying
+      calm and highly usable on a phone. The couple are the only two users;
+      the voice is warm and plain-spoken ("Mark purchased", "Seat party here").
+    </p>
+    <div class="row">
+      <span class="chip"><span class="dot" style="background:var(--accent)"></span> Antique gold — the single accent</span>
+      <span class="chip"><span class="dot" style="background:var(--sage)"></span> Sage</span>
+      <span class="chip"><span class="dot" style="background:var(--rose)"></span> Dusty rose</span>
+      <span class="chip"><span class="dot" style="background:var(--ink-blue)"></span> Ink blue</span>
+    </div>
+  </section>
+
+  <!-- COLOR -->
+  <section>
+    <div class="rule-gold"></div>
+    <p class="eyebrow">02 · Color</p>
+    <h2 class="sec font-display">Tokens, both themes</h2>
+    <p class="sec-note">
+      The palette is defined as CSS custom properties and re-declared for dark.
+      Toggle the theme (top right) to check every swatch on both grounds — the
+      accent must keep working on ivory and on near-black. Semantic status hues
+      are separate from the accent.
+    </p>
+
+    <h3 class="sub eyebrow">Surfaces &amp; text</h3>
+    <div class="grid swatches">
+      <div class="swatch"><div class="chipcolor" style="background:var(--background)"></div><div class="meta"><div class="name">--background</div><div class="val">page ground</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--surface)"></div><div class="meta"><div class="name">--surface</div><div class="val">cards</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--surface-2)"></div><div class="meta"><div class="name">--surface-2</div><div class="val">wells / hover</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--foreground)"></div><div class="meta"><div class="name">--foreground</div><div class="val">ink text</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--muted)"></div><div class="meta"><div class="name">--muted</div><div class="val">secondary text</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--border)"></div><div class="meta"><div class="name">--border</div><div class="val">hairline</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--border-strong)"></div><div class="meta"><div class="name">--border-strong</div><div class="val">inputs</div></div></div>
+    </div>
+
+    <h3 class="sub eyebrow">Accent &amp; secondaries</h3>
+    <div class="grid swatches">
+      <div class="swatch"><div class="chipcolor" style="background:var(--accent)"></div><div class="meta"><div class="name">--accent</div><div class="val">antique gold</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--accent-soft)"></div><div class="meta"><div class="name">--accent-soft</div><div class="val">gold wash</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--rose)"></div><div class="meta"><div class="name">--rose</div><div class="val">dusty rose</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--sage)"></div><div class="meta"><div class="name">--sage</div><div class="val">sage</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--ink-blue)"></div><div class="meta"><div class="name">--ink-blue</div><div class="val">ink blue</div></div></div>
+    </div>
+
+    <h3 class="sub eyebrow">Status (semantic — not the accent)</h3>
+    <div class="grid swatches">
+      <div class="swatch"><div class="chipcolor" style="background:var(--needed)"></div><div class="meta"><div class="name">--needed</div><div class="val">amber</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--purchased)"></div><div class="meta"><div class="name">--purchased</div><div class="val">slate</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--ready)"></div><div class="meta"><div class="name">--ready</div><div class="val">green (success)</div></div></div>
+      <div class="swatch"><div class="chipcolor" style="background:var(--danger)"></div><div class="meta"><div class="name">--danger</div><div class="val">warning red</div></div></div>
+    </div>
+    <p class="sec-note" style="margin-top:1rem;">
+      Note: item status is only <strong>Needed</strong> / <strong>Purchased</strong>
+      today. <code class="inline">--ready</code> (green) is retained as a generic
+      success color (import confirmations, progress) — keep it as a color even
+      though "Ready" is no longer a status.
+    </p>
+  </section>
+
+  <!-- TYPE -->
+  <section>
+    <div class="rule-gold"></div>
+    <p class="eyebrow">03 · Typography</p>
+    <h2 class="sec font-display">Cormorant Garamond &amp; Inter</h2>
+    <p class="sec-note">
+      A high-contrast serif for display (headings, numbers, table names) and
+      Inter for everything operational. Display is set through the
+      <code class="inline">.font-display</code> class; the uppercase tracked
+      label is <code class="inline">.eyebrow</code>. Fonts are self-hosted in
+      the app via <code class="inline">next/font</code> — propose replacements
+      as <code class="inline">next/font</code> families.
+    </p>
+    <div class="card specimen" style="padding:1.5rem;">
+      <div class="stack">
+        <div><span class="type-meta">Display / .font-display · 48–58px</span><div class="d1 font-display">Where every item &amp; guest belongs</div></div>
+        <div><span class="type-meta">Display / section · 30–34px</span><div class="d2 font-display">Head Table · Seat 4</div></div>
+        <div><span class="type-meta">Display / small · 22px</span><div class="d3 font-display">The Riveras</div></div>
+        <div><span class="type-meta">Eyebrow / .eyebrow</span><div><span class="eyebrow">Wedding day</span></div></div>
+        <div><span class="type-meta">Body / Inter · 16px</span><p class="body" style="margin:.25rem 0 0;">Drag a guest onto a seat to place them; drop a guest on a table to seat their whole party together. Split parties flash a warning.</p></div>
+        <div><span class="type-meta">Caption / 12.8px</span><div class="small">24 votives · Ceremony Arch · needs flameless candles</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPACING / RADIUS / ELEVATION -->
+  <section>
+    <div class="rule-gold"></div>
+    <p class="eyebrow">04 · Space, radius &amp; elevation</p>
+    <h2 class="sec font-display">The quiet parts</h2>
+    <div class="cols two">
+      <div class="stack">
+        <h3 class="sub eyebrow" style="margin-top:0;">Radius &amp; shadow</h3>
+        <table class="tokens">
+          <tr><th>Token</th><th>Value</th><th>Use</th></tr>
+          <tr><td><code>--radius</code></td><td>0.85rem</td><td>cards, panels</td></tr>
+          <tr><td><code>rounded-lg</code></td><td>0.5rem</td><td>buttons, inputs, chips inner</td></tr>
+          <tr><td><code>--shadow-sm</code></td><td>subtle</td><td>resting cards</td></tr>
+          <tr><td><code>--shadow-md</code></td><td>lifted</td><td>hover / drawers</td></tr>
+          <tr><td><code>--shadow-lg</code></td><td>floating</td><td>modals, dragged clone</td></tr>
+        </table>
+        <div class="row" style="margin-top:0.5rem;">
+          <div class="card" style="height:4rem;width:4rem;box-shadow:var(--shadow-sm);"></div>
+          <div class="card" style="height:4rem;width:4rem;box-shadow:var(--shadow-md);"></div>
+          <div class="card" style="height:4rem;width:4rem;box-shadow:var(--shadow-lg);"></div>
+        </div>
+      </div>
+      <div class="stack">
+        <h3 class="sub eyebrow" style="margin-top:0;">Spacing rhythm</h3>
+        <p class="sec-note" style="margin:0;">Layout uses flex/grid <code class="inline">gap</code> on a 4px base (0.25rem steps). Generous section padding (2.5–3rem), comfortable card padding (1rem–1.5rem). Keep running text ≈ 60–70 characters wide.</p>
+        <div class="stack" style="margin-top:0.5rem;">
+          <div style="height:0.5rem;background:var(--accent-soft);width:25%;border-radius:3px;"></div>
+          <div style="height:0.5rem;background:var(--accent-soft);width:50%;border-radius:3px;"></div>
+          <div style="height:0.5rem;background:var(--accent-soft);width:75%;border-radius:3px;"></div>
+          <div style="height:0.5rem;background:var(--accent-soft);width:100%;border-radius:3px;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPONENTS -->
+  <section>
+    <div class="rule-gold"></div>
+    <p class="eyebrow">05 · Components</p>
+    <h2 class="sec font-display">The shared vocabulary</h2>
+    <p class="sec-note">
+      These classes are defined once in <code class="inline">globals.css</code>
+      and used across every screen. Restyle these and the whole app changes.
+      Keep the names.
+    </p>
+
+    <h3 class="sub eyebrow">Buttons — <code>.btn</code> + variant</h3>
+    <div class="demo">
+      <button class="btn btn-primary">Add item</button>
+      <button class="btn btn-ghost">Manage locations</button>
+      <button class="btn btn-danger">Delete</button>
+      <button class="btn btn-primary btn-sm">Small</button>
+      <button class="btn btn-ghost btn-sm">Small ghost</button>
+    </div>
+
+    <h3 class="sub eyebrow">Inputs — <code>.label</code> / <code>.input</code></h3>
+    <div class="demo">
+      <div style="min-width:14rem;flex:1;">
+        <label class="label" for="d1">Item name</label>
+        <input class="input" id="d1" value="Votive candle holders">
+      </div>
+      <div style="min-width:10rem;">
+        <label class="label" for="d2">Status</label>
+        <select class="input" id="d2"><option>Needed</option><option>Purchased</option></select>
+      </div>
+    </div>
+
+    <h3 class="sub eyebrow">Card — <code>.card</code></h3>
+    <div class="card" style="padding:1.1rem;max-width:22rem;">
+      <div class="row" style="justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="font-display" style="font-size:1.15rem;">Champagne coupes <span style="color:var(--muted)">×100</span></div>
+          <div class="row" style="margin-top:0.4rem;gap:0.4rem;">
+            <span class="chip">Tableware</span>
+            <span class="badge badge-needed"><span class="dot" style="background:var(--needed)"></span> Needed</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:0.8rem;">
+        <select class="input" style="font-size:0.8rem;padding:0.35rem 0.6rem;"><option>Cocktail Bar</option><option>Unassigned</option></select>
+      </div>
+    </div>
+
+    <h3 class="sub eyebrow">Chips, dots &amp; status badges</h3>
+    <div class="demo">
+      <span class="chip"><span class="dot" style="background:var(--sage)"></span> Alex &amp; Sam</span>
+      <span class="chip">Florals</span>
+      <span class="chip" style="color:var(--rose)">High priority</span>
+      <span class="badge badge-needed"><span class="dot" style="background:var(--needed)"></span> Needed</span>
+      <span class="badge badge-purchased"><span class="dot" style="background:var(--purchased)"></span> Purchased</span>
+    </div>
+
+    <h3 class="sub eyebrow">Progress — <code>.meter</code></h3>
+    <div class="demo" style="display:block;">
+      <div class="row" style="justify-content:space-between;margin-bottom:0.4rem;">
+        <span style="font-weight:500;font-size:0.9rem;">Purchased</span>
+        <span class="type-meta">8 of 13 · 62%</span>
+      </div>
+      <div class="meter"><span style="width:62%;background:var(--purchased)"></span></div>
+    </div>
+
+    <h3 class="sub eyebrow">Tabs / nav &amp; alert</h3>
+    <div class="demo" style="display:block;">
+      <div class="row" style="gap:1rem;border-bottom:1px solid var(--border);padding-bottom:0.6rem;margin-bottom:0.9rem;">
+        <span class="font-display" style="color:var(--foreground);border-bottom:2px solid var(--accent);padding-bottom:0.6rem;">Dashboard</span>
+        <span style="color:var(--muted)">Items</span>
+        <span style="color:var(--muted)">Locations</span>
+        <span style="color:var(--muted)">Floor plan</span>
+        <span style="color:var(--muted)">Seating</span>
+      </div>
+      <div class="alert"><span aria-hidden="true">⚠</span><span>2 parties are split across tables — check the highlighted guests.</span></div>
+    </div>
+  </section>
+
+  <!-- DOMAIN PATTERNS -->
+  <section>
+    <div class="rule-gold"></div>
+    <p class="eyebrow">06 · Domain patterns</p>
+    <h2 class="sec font-display">Tables, seats &amp; parties</h2>
+    <p class="sec-note">
+      The spatial heart of the app: round/rectangular tables with seat squares
+      on a venue map, seats that fill as guests are placed, and party colors
+      that tie linked guests together. This is where the most design attention
+      would pay off.
+    </p>
+    <div class="card venue" role="img" aria-label="Venue map preview with a round and a rectangular table, seats around them">
+      <div class="marker" style="left:32%;top:52%;">
+        <div class="table-round" style="border-color:var(--rose);color:var(--foreground);background:color-mix(in srgb,var(--rose) 12%,var(--surface));">Guest 3</div>
+        <span class="seat filled" style="left:32%;top:calc(52% - 3.4rem);"></span>
+        <span class="seat filled" style="left:calc(32% + 2.9rem);top:calc(52% - 1.7rem);"></span>
+        <span class="seat" style="left:calc(32% + 2.9rem);top:calc(52% + 1.7rem);"></span>
+        <span class="seat" style="left:32%;top:calc(52% + 3.4rem);"></span>
+        <span class="seat filled" style="left:calc(32% - 2.9rem);top:calc(52% + 1.7rem);"></span>
+        <span class="seat" style="left:calc(32% - 2.9rem);top:calc(52% - 1.7rem);"></span>
+      </div>
+      <div class="marker" style="left:70%;top:52%;">
+        <div class="table-rect" style="border-color:var(--accent);color:var(--foreground);background:var(--accent-soft);">Head</div>
+        <span class="seat filled" style="left:calc(70% - 2rem);top:calc(52% - 2.4rem);"></span>
+        <span class="seat filled" style="left:70%;top:calc(52% - 2.4rem);"></span>
+        <span class="seat" style="left:calc(70% + 2rem);top:calc(52% - 2.4rem);"></span>
+        <span class="seat" style="left:calc(70% - 2rem);top:calc(52% + 2.4rem);"></span>
+        <span class="seat filled" style="left:70%;top:calc(52% + 2.4rem);"></span>
+        <span class="seat" style="left:calc(70% + 2rem);top:calc(52% + 2.4rem);"></span>
+      </div>
+    </div>
+    <p class="type-meta" style="margin-top:0.6rem;">Round → seats around the perimeter · Rectangular → seats along top &amp; bottom edges · filled = occupied (tinted with the party/table color).</p>
+  </section>
+
+  <!-- HANDOFF -->
+  <section style="border-bottom:0;">
+    <div class="rule-gold"></div>
+    <p class="eyebrow">07 · What to elevate &amp; how it maps back</p>
+    <h2 class="sec font-display">Your brief, in one place</h2>
+    <div class="cols two">
+      <div>
+        <h3 class="sub eyebrow" style="margin-top:0;">Where the most design attention pays off</h3>
+        <ul class="asks">
+          <li>A refined <strong>type scale</strong> and heading rhythm — make the serif sing.</li>
+          <li>A cohesive <strong>icon set</strong> (nav + actions: add, edit, delete, drag, search, import/export, print).</li>
+          <li><strong>Illustrations</strong> for empty states (no items / no guests / nothing placed) and a login hero; light botanical dividers.</li>
+          <li><strong>Table &amp; seat</strong> treatment on the venue map — occupied vs open, party color, the split-party warning.</li>
+          <li>A <strong>wordmark</strong>, favicon, and OG image.</li>
+          <li>Elevation, focus states, and motion (tasteful, reduced-motion aware).</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="sub eyebrow" style="margin-top:0;">How outputs fold back in</h3>
+        <ul class="asks">
+          <li><strong>Tokens + components → <code class="inline">src/app/globals.css</code>.</strong> Keep these class names (<code class="inline">.btn</code>, <code class="inline">.card</code>, <code class="inline">.input</code>, <code class="inline">.chip</code>, <code class="inline">.meter</code>, <code class="inline">.font-display</code>, <code class="inline">.eyebrow</code>) and the token names — then the whole app updates with no component edits.</li>
+          <li><strong>Fonts → <code class="inline">src/app/layout.tsx</code></strong> (next/font families + <code class="inline">--font-*</code> vars).</li>
+          <li><strong>Assets → <code class="inline">public/</code></strong> (SVG); icons as small inline-SVG React components under <code class="inline">src/components/icons/</code>.</li>
+          <li><strong>Favicon / OG →</strong> <code class="inline">src/app/icon.svg</code> and <code class="inline">src/app/opengraph-image.*</code>.</li>
+        </ul>
+        <p class="sec-note" style="margin-top:0.75rem;">
+          Constraints: Tailwind v4 tokens in <code class="inline">@theme</code> + components in <code class="inline">@layer components</code>; both themes; WCAG AA; self-contained (no runtime CDNs); mobile-first; no new deps without flagging.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById("themeToggle");
+    function current() {
+      var set = document.documentElement.getAttribute("data-theme");
+      if (set) return set;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    btn.addEventListener("click", function () {
+      var next = current() === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      btn.textContent = next === "dark" ? "Light theme" : "Dark theme";
+    });
+  })();
+</script>
