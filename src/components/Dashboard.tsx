@@ -3,17 +3,41 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { ItemDTO, LocationDTO } from "@/lib/types";
-import { ITEM_STATUS_LABELS, type ItemStatus } from "@/lib/constants";
+import {
+  ITEM_STATUS_LABELS,
+  ITEM_CATEGORIES,
+  ITEM_CATEGORY_LABELS,
+  type ItemStatus,
+  type ItemCategory,
+} from "@/lib/constants";
 import { fetchLocations, fetchItems } from "@/lib/client";
 import ItemCard from "@/components/ItemCard";
 
 type StatusFilter = "ALL" | ItemStatus;
+type CategoryFilter = "ALL" | ItemCategory;
 
 const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
   { value: "ALL", label: "All" },
   { value: "NEEDED", label: ITEM_STATUS_LABELS.NEEDED },
   { value: "PURCHASED", label: ITEM_STATUS_LABELS.PURCHASED },
+  { value: "READY", label: ITEM_STATUS_LABELS.READY },
 ];
+
+const usd = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
+function money(value: number): string {
+  if (Number.isInteger(value)) return usd.format(value);
+  return value.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 export default function Dashboard() {
   const [locations, setLocations] = useState<LocationDTO[]>([]);
@@ -23,6 +47,7 @@ export default function Dashboard() {
 
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("ALL");
 
   const reload = useCallback(async () => {
     setLoadError(null);
@@ -66,27 +91,46 @@ export default function Dashboard() {
     const q = query.trim().toLowerCase();
     return items.filter((item) => {
       if (statusFilter !== "ALL" && item.status !== statusFilter) return false;
+      if (categoryFilter !== "ALL" && item.category !== categoryFilter)
+        return false;
       if (q && !item.name.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [items, query, statusFilter]);
+  }, [items, query, statusFilter, categoryFilter]);
 
   const sortedLocations = useMemo(
-    () => [...locations].sort((a, b) => a.name.localeCompare(b.name)),
+    () =>
+      [...locations].sort(
+        (a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name),
+      ),
     [locations],
   );
 
   const summary = useMemo(() => {
+    let ready = 0;
     let purchased = 0;
     let needed = 0;
     let unassigned = 0;
+    let estimatedTotal = 0;
     for (const item of items) {
-      if (item.status === "PURCHASED") purchased += 1;
+      if (item.status === "READY") ready += 1;
+      else if (item.status === "PURCHASED") purchased += 1;
       else needed += 1;
       if (item.locationId === null) unassigned += 1;
+      if (item.estimatedCost != null) estimatedTotal += item.estimatedCost;
     }
-    return { total: items.length, purchased, needed, unassigned };
+    return {
+      total: items.length,
+      ready,
+      purchased,
+      needed,
+      unassigned,
+      estimatedTotal,
+    };
   }, [items]);
+
+  const readinessPct =
+    summary.total === 0 ? 0 : Math.round((summary.ready / summary.total) * 100);
 
   const itemsFor = useCallback(
     (locationId: string | null) =>
@@ -95,72 +139,93 @@ export default function Dashboard() {
   );
 
   if (loading) {
-    return (
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <p className="text-muted">Loading your planner…</p>
-      </div>
-    );
+    return <p className="text-muted">Loading your planner…</p>;
   }
 
   const noItemsAtAll = items.length === 0;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div>
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Placement Planner</h1>
+          <p className="eyebrow">Wedding day</p>
+          <h1 className="font-display text-3xl sm:text-4xl">
+            Placement Planner
+          </h1>
           <p className="mt-1 text-muted">
             Where every item lives on the big day.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            href="/locations"
-            className="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-background"
-          >
+          <Link href="/locations" className="btn btn-ghost">
             Manage locations
           </Link>
-          <Link
-            href="/items/new"
-            className="rounded-lg bg-accent px-3 py-2 font-medium text-white"
-          >
+          <Link href="/items/new" className="btn btn-primary">
             Add item
           </Link>
         </div>
       </header>
 
       {loadError ? (
-        <p className="mt-4 text-sm text-red-500">{loadError}</p>
+        <p className="mt-4 text-sm text-danger">{loadError}</p>
       ) : null}
 
       {noItemsAtAll ? (
-        <div className="mt-10 rounded-xl border border-border bg-card p-10 text-center shadow-sm">
-          <h2 className="text-lg font-semibold">Nothing here yet</h2>
+        <div className="card mt-10 p-10 text-center">
+          <h2 className="font-display text-2xl">Nothing here yet</h2>
           <p className="mt-2 text-muted">
             Start by adding an item, then place it at a location.
           </p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/items/new"
-              className="rounded-lg bg-accent px-3 py-2 font-medium text-white"
-            >
+            <Link href="/items/new" className="btn btn-primary">
               Add your first item
             </Link>
-            <Link
-              href="/locations"
-              className="rounded-lg border border-border px-3 py-2 font-medium hover:bg-background"
-            >
+            <Link href="/locations" className="btn btn-ghost">
               Manage locations
             </Link>
           </div>
         </div>
       ) : (
         <>
-          <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <SummaryTile label="Total items" value={summary.total} />
-            <SummaryTile label="Purchased" value={summary.purchased} />
-            <SummaryTile label="Needed" value={summary.needed} />
+            <SummaryTile
+              label="Ready"
+              value={summary.ready}
+              accent="text-ready"
+            />
+            <SummaryTile
+              label="Purchased"
+              value={summary.purchased}
+              accent="text-purchased"
+            />
+            <SummaryTile
+              label="Needed"
+              value={summary.needed}
+              accent="text-needed"
+            />
             <SummaryTile label="Unassigned" value={summary.unassigned} />
+            <SummaryTile
+              label="Est. cost"
+              value={money(summary.estimatedTotal)}
+            />
+          </section>
+
+          <section className="card mt-4 p-4">
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-sm font-medium">Overall readiness</span>
+              <span className="text-sm text-muted">
+                {summary.ready} of {summary.total} ready · {readinessPct}%
+              </span>
+            </div>
+            <div className="meter mt-2">
+              <span
+                style={{
+                  width: `${readinessPct}%`,
+                  background: "var(--ready)",
+                }}
+              />
+            </div>
           </section>
 
           <section className="mt-6 flex flex-wrap items-center gap-3">
@@ -169,17 +234,17 @@ export default function Dashboard() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search items by name…"
-              className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 outline-none focus:border-accent"
+              className="input min-w-0 flex-1"
             />
-            <div className="flex items-center gap-1 rounded-lg border border-border bg-background p-1">
+            <div className="flex items-center gap-1 rounded-lg border border-border-strong bg-surface p-1">
               {STATUS_FILTERS.map((f) => (
                 <button
                   key={f.value}
                   type="button"
                   onClick={() => setStatusFilter(f.value)}
-                  className={`rounded-md px-3 py-1 text-sm font-medium ${
+                  className={`rounded-md px-3 py-1 text-sm font-medium transition-colors cursor-pointer ${
                     statusFilter === f.value
-                      ? "bg-accent text-white"
+                      ? "bg-accent text-on-accent"
                       : "text-muted hover:text-foreground"
                   }`}
                 >
@@ -187,6 +252,21 @@ export default function Dashboard() {
                 </button>
               ))}
             </div>
+            <select
+              value={categoryFilter}
+              onChange={(e) =>
+                setCategoryFilter(e.target.value as CategoryFilter)
+              }
+              aria-label="Filter by category"
+              className="input w-auto"
+            >
+              <option value="ALL">All categories</option>
+              {ITEM_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {ITEM_CATEGORY_LABELS[c]}
+                </option>
+              ))}
+            </select>
           </section>
 
           <div className="mt-8 flex flex-col gap-10">
@@ -195,6 +275,7 @@ export default function Dashboard() {
                 key={location.id}
                 name={location.name}
                 description={location.description}
+                color={location.color}
                 items={itemsFor(location.id)}
                 locations={locations}
                 onChange={onChange}
@@ -204,6 +285,7 @@ export default function Dashboard() {
             <LocationSection
               name="Unassigned"
               description="Items not yet placed at a location."
+              color={null}
               items={itemsFor(null)}
               locations={locations}
               onChange={onChange}
@@ -215,10 +297,18 @@ export default function Dashboard() {
   );
 }
 
-function SummaryTile({ label, value }: { label: string; value: number }) {
+function SummaryTile({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number | string;
+  accent?: string;
+}) {
   return (
-    <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-      <div className="text-2xl font-semibold">{value}</div>
+    <div className="card p-4">
+      <div className={`text-2xl font-semibold ${accent ?? ""}`}>{value}</div>
       <div className="text-sm text-muted">{label}</div>
     </div>
   );
@@ -227,23 +317,43 @@ function SummaryTile({ label, value }: { label: string; value: number }) {
 function LocationSection({
   name,
   description,
+  color,
   items,
   locations,
   onChange,
 }: {
   name: string;
   description: string | null;
+  color: string | null;
   items: ItemDTO[];
   locations: LocationDTO[];
   onChange: () => void;
 }) {
+  const readyCount = items.filter((it) => it.status === "READY").length;
+  const readyPct =
+    items.length === 0 ? 0 : Math.round((readyCount / items.length) * 100);
+
   return (
     <section>
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <h2 className="text-lg font-semibold">{name}</h2>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span
+          className="h-3 w-3 shrink-0 rounded-full"
+          style={{ background: color ?? "var(--accent)" }}
+        />
+        <h2 className="font-display text-2xl">{name}</h2>
         <span className="text-sm text-muted">
           {items.length} {items.length === 1 ? "item" : "items"}
         </span>
+        {items.length > 0 ? (
+          <div className="flex items-center gap-2">
+            <div className="meter h-1.5 w-24">
+              <span
+                style={{ width: `${readyPct}%`, background: "var(--ready)" }}
+              />
+            </div>
+            <span className="text-xs text-muted">{readyPct}% ready</span>
+          </div>
+        ) : null}
       </div>
       {description ? (
         <p className="mt-0.5 text-sm text-muted">{description}</p>

@@ -33,17 +33,17 @@ export default function EditItemPage() {
   }, [id]);
 
   return (
-    <div className="max-w-xl">
-      <h1 className="text-2xl font-semibold mb-4">Edit item</h1>
+    <div className="mx-auto max-w-2xl">
+      <header className="mb-6 space-y-1">
+        <p className="eyebrow">Edit</p>
+        <h1 className="font-display text-3xl sm:text-4xl">Edit item</h1>
+      </header>
       {loading ? (
         <p className="text-muted">Loading…</p>
       ) : notFound || !item ? (
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-3">
+        <div className="card space-y-3 p-5">
           <p className="text-muted">This item could not be found.</p>
-          <Link
-            href="/"
-            className="text-sm text-muted hover:text-foreground"
-          >
+          <Link href="/" className="text-sm text-muted hover:text-foreground">
             Back to items
           </Link>
         </div>

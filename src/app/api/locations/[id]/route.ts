@@ -4,7 +4,20 @@ import { requireApiAuth } from "@/lib/auth";
 
 type Params = { params: Promise<{ id: string }> };
 
-// PATCH /api/locations/:id — update name/description.
+function str(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : null;
+}
+
+function toFraction(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.min(1, Math.max(0, n));
+}
+
+// PATCH /api/locations/:id — update name/description/color/plan position/order.
 export async function PATCH(request: Request, { params }: Params) {
   const unauth = await requireApiAuth();
   if (unauth) return unauth;
@@ -17,8 +30,9 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { name, description } = (body ?? {}) as Record<string, unknown>;
-  const data: { name?: string; description?: string | null } = {};
+  const { name, description, color, planX, planY, sortOrder } = (body ??
+    {}) as Record<string, unknown>;
+  const data: Record<string, unknown> = {};
 
   if (name !== undefined) {
     if (typeof name !== "string" || name.trim().length === 0) {
@@ -26,11 +40,20 @@ export async function PATCH(request: Request, { params }: Params) {
     }
     data.name = name.trim();
   }
-  if (description !== undefined) {
-    data.description =
-      typeof description === "string" && description.trim().length > 0
-        ? description.trim()
-        : null;
+  if (description !== undefined) data.description = str(description);
+  if (color !== undefined) data.color = str(color);
+  if (planX !== undefined) data.planX = toFraction(planX);
+  if (planY !== undefined) data.planY = toFraction(planY);
+  if (sortOrder !== undefined) {
+    const n =
+      typeof sortOrder === "number" ? sortOrder : Number(sortOrder);
+    if (!Number.isInteger(n)) {
+      return NextResponse.json(
+        { error: "sortOrder must be an integer" },
+        { status: 400 },
+      );
+    }
+    data.sortOrder = n;
   }
 
   try {

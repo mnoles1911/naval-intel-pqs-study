@@ -5,8 +5,8 @@
 //   - An Item belongs to at most one Location (nullable => "Unassigned").
 //   - Deleting a Location sets its items back to Unassigned (onDelete: SetNull).
 //
-// Local dev uses SQLite (zero setup). For an online deployment, switch the
-// datasource provider to "postgresql" and point DATABASE_URL at a hosted DB.
+// Deployment uses PostgreSQL (DATABASE_URL). A single shared password gates
+// the whole app, so there is no user table.
 
 generator client {
   provider = "prisma-client-js"
@@ -21,6 +21,14 @@ model Location {
   id          String   @id @default(cuid())
   name        String
   description String?
+  // Optional accent color (hex) used by the dashboard, plan board, and legend.
+  color       String?
+  // Position on the visual floor-plan board (0..1 fractions of the canvas).
+  // Null until the couple places the zone on the plan.
+  planX       Float?
+  planY       Float?
+  // Manual ordering for the plan board / setup sheets (lower shows first).
+  sortOrder   Int      @default(0)
   items       Item[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -30,9 +38,23 @@ model Item {
   id          String     @id @default(cuid())
   name        String
   description String?
-  // Status is one of the values in ITEM_STATUSES (see src/lib/constants.ts).
-  // Stored as a string because SQLite does not support Prisma enums.
+  // Acquisition + readiness lifecycle. One of ITEM_STATUSES
+  // (NEEDED -> PURCHASED -> READY). See src/lib/constants.ts.
   status      String    @default("NEEDED")
+  // How many of this physical object are needed (e.g. 24 votives).
+  quantity    Int       @default(1)
+  // Optional grouping. One of ITEM_CATEGORIES (see src/lib/constants.ts).
+  category    String?
+  // Planning priority. One of ITEM_PRIORITIES (LOW/MEDIUM/HIGH).
+  priority    String    @default("MEDIUM")
+  // Budget tracking (in whole currency units; couple's local currency).
+  estimatedCost Float?
+  actualCost    Float?
+  // Where it's coming from.
+  vendorName  String?
+  vendorUrl   String?
+  // Free-form planning notes (setup instructions, reminders, etc.).
+  notes       String?
   photoUrl    String?
   location    Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
   locationId  String?
