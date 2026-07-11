@@ -88,6 +88,12 @@ model Person {
   id          String   @id @default(cuid())
   name        String
   notes       String?
+  // RSVP tracking, kept in sync from Zola's RSVP export. Status is one of
+  // RSVP_STATUSES (PENDING / ATTENDING / DECLINED). mealChoice and
+  // dietaryNotes come straight from Zola when present.
+  rsvpStatus  String   @default("PENDING")
+  mealChoice  String?
+  dietaryNotes String?
   party       Party?   @relation(fields: [partyId], references: [id], onDelete: SetNull)
   partyId     String?
   assignments SeatAssignment[]

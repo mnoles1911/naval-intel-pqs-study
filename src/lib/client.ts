@@ -25,6 +25,25 @@ async function handle<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+// --- Zola RSVP sync ---
+
+export interface ZolaImportResult {
+  updated: number;
+  matched: number;
+  unmatchedCount: number;
+  unmatched: { name: string; rsvp: string; meal: string }[];
+  totalRows: number;
+}
+
+export function importZolaRsvps(file: File): Promise<ZolaImportResult> {
+  const form = new FormData();
+  form.append("file", file);
+  return fetch("/api/guests/zola-import", {
+    method: "POST",
+    body: form,
+  }).then((r) => handle<ZolaImportResult>(r));
+}
+
 // --- Audit trail ---
 
 export function fetchAudit(opts?: {

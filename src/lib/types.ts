@@ -63,6 +63,9 @@ export interface PersonDTO {
   id: string;
   name: string;
   notes: string | null;
+  rsvpStatus: string;
+  mealChoice: string | null;
+  dietaryNotes: string | null;
   partyId: string | null;
   createdAt: string;
 }
