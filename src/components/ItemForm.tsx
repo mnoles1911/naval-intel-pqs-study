@@ -30,11 +30,6 @@ type ItemFormProps = {
   initial?: Partial<ItemDTO>;
 };
 
-// Empty string means "not set" for optional numeric inputs.
-function numToField(n: number | null | undefined): string {
-  return n == null ? "" : String(n);
-}
-
 export default function ItemForm({ mode, itemId, initial }: ItemFormProps) {
   const router = useRouter();
 
@@ -51,12 +46,6 @@ export default function ItemForm({ mode, itemId, initial }: ItemFormProps) {
   );
   const [priority, setPriority] = useState<ItemPriority>(
     initial?.priority ?? "MEDIUM",
-  );
-  const [estimatedCost, setEstimatedCost] = useState<string>(
-    numToField(initial?.estimatedCost),
-  );
-  const [actualCost, setActualCost] = useState<string>(
-    numToField(initial?.actualCost),
   );
   const [vendorName, setVendorName] = useState<string>(
     initial?.vendorName ?? "",
@@ -104,26 +93,6 @@ export default function ItemForm({ mode, itemId, initial }: ItemFormProps) {
       return;
     }
 
-    // Optional numeric costs — blank means "not set".
-    let estimated: number | null = null;
-    if (estimatedCost.trim() !== "") {
-      const v = Number(estimatedCost);
-      if (!Number.isFinite(v) || v < 0) {
-        setError("Estimated cost must be zero or more.");
-        return;
-      }
-      estimated = v;
-    }
-    let actual: number | null = null;
-    if (actualCost.trim() !== "") {
-      const v = Number(actualCost);
-      if (!Number.isFinite(v) || v < 0) {
-        setError("Actual cost must be zero or more.");
-        return;
-      }
-      actual = v;
-    }
-
     setSaving(true);
     setError(null);
     const locationId = locationValue === UNASSIGNED ? null : locationValue;
@@ -133,8 +102,6 @@ export default function ItemForm({ mode, itemId, initial }: ItemFormProps) {
       quantity: qty,
       category: category === "" ? null : category,
       priority,
-      estimatedCost: estimated,
-      actualCost: actual,
       vendorName: vendorName.trim() ? vendorName.trim() : null,
       vendorUrl: vendorUrl.trim() ? vendorUrl.trim() : null,
       notes: notes.trim() ? notes.trim() : null,
@@ -290,40 +257,6 @@ export default function ItemForm({ mode, itemId, initial }: ItemFormProps) {
               </option>
             ))}
           </select>
-        </div>
-
-        <div className="hidden sm:block" aria-hidden />
-
-        <div>
-          <label htmlFor="item-estimated-cost" className="label">
-            Estimated cost
-          </label>
-          <input
-            id="item-estimated-cost"
-            type="number"
-            min={0}
-            step="0.01"
-            value={estimatedCost}
-            onChange={(e) => setEstimatedCost(e.target.value)}
-            placeholder="0"
-            className="input"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="item-actual-cost" className="label">
-            Actual cost
-          </label>
-          <input
-            id="item-actual-cost"
-            type="number"
-            min={0}
-            step="0.01"
-            value={actualCost}
-            onChange={(e) => setActualCost(e.target.value)}
-            placeholder="0"
-            className="input"
-          />
         </div>
 
         <div>

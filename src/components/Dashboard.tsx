@@ -23,22 +23,6 @@ const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
   { value: "READY", label: ITEM_STATUS_LABELS.READY },
 ];
 
-const usd = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
-
-function money(value: number): string {
-  if (Number.isInteger(value)) return usd.format(value);
-  return value.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
 export default function Dashboard() {
   const [locations, setLocations] = useState<LocationDTO[]>([]);
   const [items, setItems] = useState<ItemDTO[]>([]);
@@ -111,13 +95,11 @@ export default function Dashboard() {
     let purchased = 0;
     let needed = 0;
     let unassigned = 0;
-    let estimatedTotal = 0;
     for (const item of items) {
       if (item.status === "READY") ready += 1;
       else if (item.status === "PURCHASED") purchased += 1;
       else needed += 1;
       if (item.locationId === null) unassigned += 1;
-      if (item.estimatedCost != null) estimatedTotal += item.estimatedCost;
     }
     return {
       total: items.length,
@@ -125,7 +107,6 @@ export default function Dashboard() {
       purchased,
       needed,
       unassigned,
-      estimatedTotal,
     };
   }, [items]);
 
@@ -205,10 +186,6 @@ export default function Dashboard() {
               accent="text-needed"
             />
             <SummaryTile label="Unassigned" value={summary.unassigned} />
-            <SummaryTile
-              label="Est. cost"
-              value={money(summary.estimatedTotal)}
-            />
           </section>
 
           <section className="card mt-4 p-4">

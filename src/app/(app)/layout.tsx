@@ -33,7 +33,6 @@ export default async function AppLayout({
             <NavLink href="/">Dashboard</NavLink>
             <NavLink href="/plan">Floor plan</NavLink>
             <NavLink href="/seating">Seating</NavLink>
-            <NavLink href="/budget">Budget</NavLink>
             <NavLink href="/setup">Setup sheets</NavLink>
             <NavLink href="/locations">Locations</NavLink>
             <span className="mx-1 hidden h-5 w-px bg-border sm:block" />
