@@ -9,6 +9,8 @@ type SeedLocation = {
   planX: number;
   planY: number;
   sortOrder: number;
+  shape: "ROUND" | "RECT";
+  seatCount: number;
 };
 
 type SeedItem = {
@@ -44,6 +46,8 @@ const LOCATIONS: SeedLocation[] = [
     planX: 0.12,
     planY: 0.2,
     sortOrder: 0,
+    shape: "RECT",
+    seatCount: 2,
   },
   {
     name: "Ceremony Arch",
@@ -52,6 +56,8 @@ const LOCATIONS: SeedLocation[] = [
     planX: 0.5,
     planY: 0.12,
     sortOrder: 1,
+    shape: "ROUND",
+    seatCount: 2,
   },
   {
     name: "Cocktail Bar",
@@ -60,6 +66,8 @@ const LOCATIONS: SeedLocation[] = [
     planX: 0.82,
     planY: 0.32,
     sortOrder: 2,
+    shape: "RECT",
+    seatCount: 6,
   },
   {
     name: "Guest Tables",
@@ -68,6 +76,8 @@ const LOCATIONS: SeedLocation[] = [
     planX: 0.45,
     planY: 0.62,
     sortOrder: 3,
+    shape: "ROUND",
+    seatCount: 10,
   },
   {
     name: "Head Table",
@@ -76,6 +86,8 @@ const LOCATIONS: SeedLocation[] = [
     planX: 0.5,
     planY: 0.85,
     sortOrder: 4,
+    shape: "RECT",
+    seatCount: 8,
   },
 ];
 
@@ -225,8 +237,42 @@ const ITEMS: SeedItem[] = [
   },
 ];
 
+type SeedParty = { key: string; name: string; color: string };
+type SeedPerson = {
+  name: string;
+  party: string | null;
+  location: string | null;
+  notes?: string;
+};
+
+const PARTIES: SeedParty[] = [
+  { key: "AS", name: "Alex & Sam", color: "#a3b18a" },
+  { key: "JT", name: "Jordan & Taylor", color: "#cba0a0" },
+  { key: "RIV", name: "The Riveras", color: "#9db4c0" },
+];
+
+const PEOPLE: SeedPerson[] = [
+  // A couple seated together (no warning).
+  { name: "Alex Chen", party: "AS", location: "Guest Tables" },
+  { name: "Sam Chen", party: "AS", location: "Guest Tables" },
+  // A couple split across two tables (should show a separation warning).
+  { name: "Jordan Lee", party: "JT", location: "Head Table" },
+  { name: "Taylor Lee", party: "JT", location: "Guest Tables" },
+  // A family with one member not yet seated (also a separation warning).
+  { name: "Maria Rivera", party: "RIV", location: "Guest Tables" },
+  { name: "Luis Rivera", party: "RIV", location: "Guest Tables" },
+  { name: "Elena Rivera", party: "RIV", location: null, notes: "Plus-one — still deciding table." },
+  // Solo guests (never flagged).
+  { name: "Pat Morgan", party: null, location: "Head Table" },
+  { name: "Robin Fox", party: null, location: null },
+];
+
 async function main() {
-  // Clear existing data (items first due to the relation).
+  // Clear existing data (children first due to relations).
+  await prisma.seatAssignment.deleteMany();
+  await prisma.seatingPlan.deleteMany();
+  await prisma.person.deleteMany();
+  await prisma.party.deleteMany();
   await prisma.item.deleteMany();
   await prisma.location.deleteMany();
 
@@ -244,15 +290,56 @@ async function main() {
     await prisma.item.create({ data: { ...rest, locationId } });
   }
 
+  // Create parties, capturing their generated ids by seed key.
+  const partyIds = new Map<string, string>();
+  for (const { key, name, color } of PARTIES) {
+    const created = await prisma.party.create({ data: { name, color } });
+    partyIds.set(key, created.id);
+  }
+
+  // Create guests (no seat here — seating lives in a plan).
+  const personIds = new Map<string, string>();
+  for (const person of PEOPLE) {
+    const created = await prisma.person.create({
+      data: {
+        name: person.name,
+        notes: person.notes,
+        partyId: person.party ? partyIds.get(person.party) ?? null : null,
+      },
+    });
+    personIds.set(person.name, created.id);
+  }
+
+  // Create a default active seating plan and seat guests in it, packing each
+  // table's seats from index 0. Guests with no seed location stay unseated.
+  const plan = await prisma.seatingPlan.create({
+    data: { name: "Plan A", isActive: true },
+  });
+  const nextSeat = new Map<string, number>();
+  for (const person of PEOPLE) {
+    if (!person.location) continue;
+    const locationId = locationIds.get(person.location);
+    const personId = personIds.get(person.name);
+    if (!locationId || !personId) continue;
+    const seatIndex = nextSeat.get(locationId) ?? 0;
+    nextSeat.set(locationId, seatIndex + 1);
+    await prisma.seatAssignment.create({
+      data: { planId: plan.id, personId, locationId, seatIndex },
+    });
+  }
+
   const locationCount = await prisma.location.count();
   const itemCount = await prisma.item.count();
   const unassignedCount = await prisma.item.count({
     where: { locationId: null },
   });
+  const peopleCount = await prisma.person.count();
+  const partyCount = await prisma.party.count();
 
   console.log(
     `Seed complete: ${locationCount} locations, ${itemCount} items ` +
-      `(${unassignedCount} unassigned).`,
+      `(${unassignedCount} unassigned), ${peopleCount} guests in ` +
+      `${partyCount} parties.`,
   );
 }
 

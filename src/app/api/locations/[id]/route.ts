@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { isTableShape } from "@/lib/constants";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -8,6 +9,13 @@ function str(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0
     ? value.trim()
     : null;
+}
+
+function toSeatCount(value: unknown): number | null | undefined {
+  if (value === undefined || value === null || value === "") return null;
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isInteger(n) || n < 1 || n > 40) return undefined;
+  return n;
 }
 
 function toFraction(value: unknown): number | null {
@@ -30,8 +38,8 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { name, description, color, planX, planY, sortOrder } = (body ??
-    {}) as Record<string, unknown>;
+  const { name, description, color, planX, planY, sortOrder, shape, seatCount } =
+    (body ?? {}) as Record<string, unknown>;
   const data: Record<string, unknown> = {};
 
   if (name !== undefined) {
@@ -54,6 +62,25 @@ export async function PATCH(request: Request, { params }: Params) {
       );
     }
     data.sortOrder = n;
+  }
+  if (shape !== undefined) {
+    if (!isTableShape(shape)) {
+      return NextResponse.json(
+        { error: "Invalid table shape" },
+        { status: 400 },
+      );
+    }
+    data.shape = shape;
+  }
+  if (seatCount !== undefined) {
+    const seats = toSeatCount(seatCount);
+    if (seats === undefined || seats === null) {
+      return NextResponse.json(
+        { error: "Seat count must be a whole number from 1 to 40" },
+        { status: 400 },
+      );
+    }
+    data.seatCount = seats;
   }
 
   try {

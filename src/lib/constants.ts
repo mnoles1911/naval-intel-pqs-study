@@ -96,6 +96,19 @@ export const LOCATION_COLORS = [
   "#d0a98f", // terracotta
 ] as const;
 
+// --- Table shapes (seating) -------------------------------------------------
+export const TABLE_SHAPES = ["ROUND", "RECT"] as const;
+export type TableShape = (typeof TABLE_SHAPES)[number];
+
+export const TABLE_SHAPE_LABELS: Record<TableShape, string> = {
+  ROUND: "Round",
+  RECT: "Rectangular",
+};
+
+export function isTableShape(value: unknown): value is TableShape {
+  return typeof value === "string" && TABLE_SHAPES.includes(value as TableShape);
+}
+
 // --- Misc -------------------------------------------------------------------
 // Sentinel used in the UI to represent "no location" (Unassigned).
 export const UNASSIGNED = "UNASSIGNED";

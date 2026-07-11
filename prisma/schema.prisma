@@ -29,9 +29,71 @@ model Location {
   planY       Float?
   // Manual ordering for the plan board / setup sheets (lower shows first).
   sortOrder   Int      @default(0)
+  // Seating: a Location doubles as a table. Its shape is one of TABLE_SHAPES
+  // (ROUND / RECT) and seatCount is how many guests it seats.
+  shape       String   @default("ROUND")
+  seatCount   Int      @default(8)
   items       Item[]
+  assignments SeatAssignment[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// A group of guests who must be seated together (a couple, a family, a
+// friend group). Linking two people puts them in the same Party; the seating
+// chart flags a Party whose members are split across different tables.
+model Party {
+  id        String   @id @default(cuid())
+  name      String
+  // Optional accent color (hex) for the party's pucks on the seating chart.
+  color     String?
+  people    Person[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// A guest. Their seat is not stored here — it lives in a SeatAssignment scoped
+// to a SeatingPlan, so several plans can seat the same guest differently.
+model Person {
+  id          String   @id @default(cuid())
+  name        String
+  notes       String?
+  party       Party?   @relation(fields: [partyId], references: [id], onDelete: SetNull)
+  partyId     String?
+  assignments SeatAssignment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// A saved seating arrangement (a "version"). Duplicating a plan copies all of
+// its assignments, so past ideas can be revisited. Exactly one plan is active.
+model SeatingPlan {
+  id          String   @id @default(cuid())
+  name        String
+  notes       String?
+  isActive    Boolean  @default(false)
+  assignments SeatAssignment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// One guest seated in one seat (seatIndex, 0-based) at one table (location),
+// within one plan. A guest holds at most one seat per plan, and a seat holds
+// at most one guest per plan.
+model SeatAssignment {
+  id         String      @id @default(cuid())
+  plan       SeatingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  planId     String
+  person     Person      @relation(fields: [personId], references: [id], onDelete: Cascade)
+  personId   String
+  location   Location    @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  locationId String
+  seatIndex  Int
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@unique([planId, personId])
+  @@unique([planId, locationId, seatIndex])
 }
 
 model Item {

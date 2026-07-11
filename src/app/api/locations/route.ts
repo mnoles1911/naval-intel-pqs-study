@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { isTableShape } from "@/lib/constants";
 
 // GET /api/locations — list all locations (by manual order, then name).
 export async function GET() {
@@ -27,6 +28,15 @@ function toFraction(value: unknown): number | null {
   return Math.min(1, Math.max(0, n));
 }
 
+// Validate a seat count. Returns the number when valid, null when not provided
+// (caller applies the default), or undefined when invalid (caller 400s).
+function toSeatCount(value: unknown): number | null | undefined {
+  if (value === undefined || value === null || value === "") return null;
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isInteger(n) || n < 1 || n > 40) return undefined;
+  return n;
+}
+
 // POST /api/locations — create a location.
 export async function POST(request: Request) {
   const unauth = await requireApiAuth();
@@ -39,10 +49,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { name, description, color, planX, planY, sortOrder } = (body ??
-    {}) as Record<string, unknown>;
+  const { name, description, color, planX, planY, sortOrder, shape, seatCount } =
+    (body ?? {}) as Record<string, unknown>;
   if (typeof name !== "string" || name.trim().length === 0) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  }
+  if (shape !== undefined && !isTableShape(shape)) {
+    return NextResponse.json({ error: "Invalid table shape" }, { status: 400 });
+  }
+  const seats = toSeatCount(seatCount);
+  if (seats === undefined) {
+    return NextResponse.json(
+      { error: "Seat count must be a whole number from 1 to 40" },
+      { status: 400 },
+    );
   }
 
   const location = await prisma.location.create({
@@ -56,6 +76,8 @@ export async function POST(request: Request) {
         typeof sortOrder === "number" && Number.isInteger(sortOrder)
           ? sortOrder
           : 0,
+      shape: isTableShape(shape) ? shape : "ROUND",
+      seatCount: seats ?? 8,
     },
   });
   return NextResponse.json(location, { status: 201 });
