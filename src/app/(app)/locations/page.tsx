@@ -11,6 +11,7 @@ import {
 import {
   fetchLocations,
   createLocation,
+  createLocationsBulk,
   updateLocation,
   deleteLocation,
   fetchItems,
@@ -145,6 +146,16 @@ export default function LocationsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Bulk "add many tables" state
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkCount, setBulkCount] = useState<number>(18);
+  const [bulkSeats, setBulkSeats] = useState<number>(10);
+  const [bulkShape, setBulkShape] = useState<TableShape>(DEFAULT_SHAPE);
+  const [bulkPrefix, setBulkPrefix] = useState("Table ");
+  const [bulkStart, setBulkStart] = useState<number>(1);
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+
   // Inline edit state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -158,6 +169,10 @@ export default function LocationsPage() {
   // Item-assignment state
   const [itemError, setItemError] = useState<string | null>(null);
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
+
+  // Inline seat stepper state
+  const [seatBusyId, setSeatBusyId] = useState<string | null>(null);
+  const [seatError, setSeatError] = useState<string | null>(null);
 
   async function load() {
     const [locs, its] = await Promise.all([fetchLocations(), fetchItems()]);
@@ -214,6 +229,33 @@ export default function LocationsPage() {
     }
   }
 
+  // Bump a table's seat count up or down in place (clamped 1..40), persisting
+  // immediately. Optimistic so the number responds instantly.
+  async function adjustSeats(loc: LocationDTO, delta: number) {
+    const next = clampSeats(loc.seatCount + delta);
+    if (next === loc.seatCount) return;
+    setSeatBusyId(loc.id);
+    setSeatError(null);
+    setLocations((prev) =>
+      prev.map((l) => (l.id === loc.id ? { ...l, seatCount: next } : l)),
+    );
+    try {
+      await updateLocation(loc.id, { seatCount: next });
+    } catch (err) {
+      // Roll back the optimistic change on failure.
+      setLocations((prev) =>
+        prev.map((l) =>
+          l.id === loc.id ? { ...l, seatCount: loc.seatCount } : l,
+        ),
+      );
+      setSeatError(
+        err instanceof Error ? err.message : "Failed to update seats.",
+      );
+    } finally {
+      setSeatBusyId(null);
+    }
+  }
+
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
@@ -237,6 +279,56 @@ export default function LocationsPage() {
       setError(err instanceof Error ? err.message : "Failed to add location.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  // Highest number already used by a "<prefix>N" table, so the bulk add can
+  // continue the sequence instead of colliding with existing tables.
+  function nextNumberFor(prefix: string): number {
+    const re = new RegExp(
+      `^${prefix.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*(\\d+)$`,
+      "i",
+    );
+    let max = 0;
+    for (const loc of locations) {
+      const m = loc.name.trim().match(re);
+      if (m) max = Math.max(max, Number(m[1]));
+    }
+    return max + 1;
+  }
+
+  function openBulk() {
+    setBulkError(null);
+    setBulkStart(nextNumberFor(bulkPrefix));
+    setBulkOpen(true);
+  }
+
+  async function handleBulkAdd(e: React.FormEvent) {
+    e.preventDefault();
+    const count = Math.round(bulkCount);
+    if (!Number.isInteger(count) || count < 1 || count > 200) {
+      setBulkError("Choose between 1 and 200 tables.");
+      return;
+    }
+    setBulkSaving(true);
+    setBulkError(null);
+    try {
+      const maxOrder = locations.reduce((m, l) => Math.max(m, l.sortOrder), 0);
+      const batch = Array.from({ length: count }, (_, i) => ({
+        name: `${bulkPrefix}${bulkStart + i}`,
+        shape: bulkShape,
+        seatCount: clampSeats(bulkSeats),
+        sortOrder: maxOrder + 1 + i,
+      }));
+      await createLocationsBulk(batch);
+      await load();
+      setBulkOpen(false);
+    } catch (err) {
+      setBulkError(
+        err instanceof Error ? err.message : "Failed to add tables.",
+      );
+    } finally {
+      setBulkSaving(false);
     }
   }
 
@@ -359,6 +451,146 @@ export default function LocationsPage() {
         </button>
       </form>
 
+      {/* Bulk add tables */}
+      <div className="card p-5">
+        {!bulkOpen ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-medium">Add many tables at once</h2>
+              <p className="text-sm text-muted">
+                Lay out a whole floor of identical tables, numbered
+                automatically.
+              </p>
+            </div>
+            <button type="button" onClick={openBulk} className="btn btn-ghost">
+              Add tables in bulk
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleBulkAdd} className="space-y-4">
+            <h2 className="font-medium">Add many tables at once</h2>
+            <div className="flex flex-wrap items-end gap-6">
+              <div>
+                <label htmlFor="bulk-count" className="label">
+                  How many
+                </label>
+                <input
+                  id="bulk-count"
+                  type="number"
+                  min={1}
+                  max={200}
+                  value={bulkCount}
+                  onChange={(e) =>
+                    setBulkCount(Math.round(e.target.valueAsNumber) || 0)
+                  }
+                  className="input w-24"
+                />
+              </div>
+              <div>
+                <label htmlFor="bulk-seats" className="label">
+                  Seats each
+                </label>
+                <input
+                  id="bulk-seats"
+                  type="number"
+                  min={MIN_SEATS}
+                  max={MAX_SEATS}
+                  value={bulkSeats}
+                  onChange={(e) =>
+                    setBulkSeats(clampSeats(e.target.valueAsNumber))
+                  }
+                  className="input w-24"
+                />
+              </div>
+              <div>
+                <span className="label">Shape</span>
+                <ShapeToggle
+                  value={bulkShape}
+                  onChange={setBulkShape}
+                  idPrefix="bulk-shape"
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-end gap-6">
+              <div>
+                <label htmlFor="bulk-prefix" className="label">
+                  Name prefix
+                </label>
+                <input
+                  id="bulk-prefix"
+                  type="text"
+                  value={bulkPrefix}
+                  onChange={(e) => setBulkPrefix(e.target.value)}
+                  className="input w-40"
+                />
+              </div>
+              <div>
+                <label htmlFor="bulk-start" className="label">
+                  Start number
+                </label>
+                <input
+                  id="bulk-start"
+                  type="number"
+                  min={0}
+                  value={bulkStart}
+                  onChange={(e) =>
+                    setBulkStart(Math.round(e.target.valueAsNumber) || 0)
+                  }
+                  className="input w-24"
+                />
+              </div>
+            </div>
+            <p className="text-sm text-muted">
+              Creates{" "}
+              <span className="text-foreground">
+                {bulkPrefix}
+                {bulkStart}
+              </span>{" "}
+              through{" "}
+              <span className="text-foreground">
+                {bulkPrefix}
+                {bulkStart + Math.max(0, Math.round(bulkCount) - 1)}
+              </span>{" "}
+              — {Math.max(0, Math.round(bulkCount)) * clampSeats(bulkSeats)} seats
+              total.
+            </p>
+            {bulkError && <p className="text-sm text-danger">{bulkError}</p>}
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={bulkSaving}
+                className="btn btn-primary"
+              >
+                {bulkSaving ? "Adding…" : `Add ${Math.max(0, Math.round(bulkCount))} tables`}
+              </button>
+              <button
+                type="button"
+                onClick={() => setBulkOpen(false)}
+                className="btn btn-ghost"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+
+      {/* Capacity summary */}
+      {locations.length > 0 && (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
+          <span>
+            <span className="text-foreground">{locations.length}</span> tables
+          </span>
+          <span aria-hidden>·</span>
+          <span>
+            <span className="text-foreground">
+              {locations.reduce((sum, l) => sum + l.seatCount, 0)}
+            </span>{" "}
+            seats total
+          </span>
+        </div>
+      )}
+
       {/* List */}
       {loading ? (
         <p className="text-sm text-muted">Loading locations…</p>
@@ -465,9 +697,38 @@ export default function LocationsPage() {
                             <span className="chip">
                               {TABLE_SHAPE_LABELS[loc.shape]}
                             </span>
-                            <span className="chip">
-                              {loc.seatCount}{" "}
-                              {loc.seatCount === 1 ? "seat" : "seats"}
+                            <span
+                              className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 p-0.5"
+                              aria-label={`${loc.name} seats`}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => adjustSeats(loc, -1)}
+                                disabled={
+                                  seatBusyId === loc.id ||
+                                  loc.seatCount <= MIN_SEATS
+                                }
+                                aria-label={`Remove a seat from ${loc.name}`}
+                                className="grid h-6 w-6 place-items-center rounded-full text-foreground transition-colors hover:bg-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                              >
+                                −
+                              </button>
+                              <span className="min-w-[3.5rem] text-center text-xs font-medium tabular-nums">
+                                {loc.seatCount}{" "}
+                                {loc.seatCount === 1 ? "seat" : "seats"}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => adjustSeats(loc, 1)}
+                                disabled={
+                                  seatBusyId === loc.id ||
+                                  loc.seatCount >= MAX_SEATS
+                                }
+                                aria-label={`Add a seat to ${loc.name}`}
+                                className="grid h-6 w-6 place-items-center rounded-full text-foreground transition-colors hover:bg-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                              >
+                                +
+                              </button>
                             </span>
                             <span className="text-sm text-muted">
                               {count} {count === 1 ? "item" : "items"}
@@ -565,6 +826,7 @@ export default function LocationsPage() {
       )}
 
       {itemError && <p className="text-sm text-danger">{itemError}</p>}
+      {seatError && <p className="text-sm text-danger">{seatError}</p>}
     </div>
   );
 }

@@ -53,6 +53,16 @@ export function createLocation(
   }).then((r) => handle<LocationDTO>(r));
 }
 
+export function createLocationsBulk(
+  locations: Array<LocationInput & { name: string }>,
+): Promise<{ count: number }> {
+  return fetch("/api/locations/bulk", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ locations }),
+  }).then((r) => handle<{ count: number }>(r));
+}
+
 export function updateLocation(
   id: string,
   input: LocationInput,
