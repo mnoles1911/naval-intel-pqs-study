@@ -8,7 +8,7 @@ import {
 } from "@/lib/constants";
 
 // GET /api/items — list items, newest first. Optional filters:
-//   ?status=NEEDED|PURCHASED|READY   ?locationId=<id>|unassigned   ?q=<search>
+//   ?status=NEEDED|PURCHASED   ?locationId=<id>|unassigned   ?q=<search>
 export async function GET(request: Request) {
   const unauth = await requireApiAuth();
   if (unauth) return unauth;
@@ -38,15 +38,6 @@ function str(value: unknown): string | null {
     : null;
 }
 
-// Coerce an incoming numeric field to a non-negative number or null.
-// Returns `undefined` when the value is invalid so callers can 400.
-function toMoney(value: unknown): number | null | undefined {
-  if (value === null || value === "" || value === undefined) return null;
-  const n = typeof value === "number" ? value : Number(value);
-  if (!Number.isFinite(n) || n < 0) return undefined;
-  return n;
-}
-
 // POST /api/items — create an item.
 export async function POST(request: Request) {
   const unauth = await requireApiAuth();
@@ -66,8 +57,6 @@ export async function POST(request: Request) {
     quantity,
     category,
     priority,
-    estimatedCost,
-    actualCost,
     vendorName,
     vendorUrl,
     notes,
@@ -100,15 +89,6 @@ export async function POST(request: Request) {
     qty = n;
   }
 
-  const estimated = toMoney(estimatedCost);
-  const actual = toMoney(actualCost);
-  if (estimated === undefined || actual === undefined) {
-    return NextResponse.json(
-      { error: "Costs must be non-negative numbers" },
-      { status: 400 },
-    );
-  }
-
   // Validate the referenced location exists (if provided).
   let resolvedLocationId: string | null = null;
   if (typeof locationId === "string" && locationId.length > 0) {
@@ -127,8 +107,6 @@ export async function POST(request: Request) {
       quantity: qty,
       category: isItemCategory(category) ? category : null,
       priority: isItemPriority(priority) ? priority : "MEDIUM",
-      estimatedCost: estimated,
-      actualCost: actual,
       vendorName: str(vendorName),
       vendorUrl: str(vendorUrl),
       notes: str(notes),

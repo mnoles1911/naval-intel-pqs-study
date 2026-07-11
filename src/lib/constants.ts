@@ -1,30 +1,25 @@
 // Shared domain constants used across the API, client, and UI.
 
-// --- Status lifecycle -------------------------------------------------------
-// An item moves NEEDED -> PURCHASED -> READY. "Ready" means packed and ready
-// to go to the venue; it is the terminal, day-of-complete state.
-export const ITEM_STATUSES = ["NEEDED", "PURCHASED", "READY"] as const;
+// --- Status ------------------------------------------------------------------
+// An item is either still to get (NEEDED) or acquired (PURCHASED).
+export const ITEM_STATUSES = ["NEEDED", "PURCHASED"] as const;
 export type ItemStatus = (typeof ITEM_STATUSES)[number];
 
 export const ITEM_STATUS_LABELS: Record<ItemStatus, string> = {
   NEEDED: "Needed",
   PURCHASED: "Purchased",
-  READY: "Ready",
 };
 
 // Short helper describing what each status means (used in tooltips/legends).
 export const ITEM_STATUS_HINTS: Record<ItemStatus, string> = {
   NEEDED: "Still to buy or make",
-  PURCHASED: "Bought — not yet packed",
-  READY: "Packed and ready for the venue",
+  PURCHASED: "Bought",
 };
 
-// The next status in the forward lifecycle (READY loops back to NEEDED so the
-// single toggle button can cycle through every state).
+// The toggle target: flips between the two states.
 export const NEXT_STATUS: Record<ItemStatus, ItemStatus> = {
   NEEDED: "PURCHASED",
-  PURCHASED: "READY",
-  READY: "NEEDED",
+  PURCHASED: "NEEDED",
 };
 
 export function isItemStatus(value: unknown): value is ItemStatus {
@@ -95,6 +90,19 @@ export const LOCATION_COLORS = [
   "#8fb8a8", // eucalyptus
   "#d0a98f", // terracotta
 ] as const;
+
+// --- Table shapes (seating) -------------------------------------------------
+export const TABLE_SHAPES = ["ROUND", "RECT"] as const;
+export type TableShape = (typeof TABLE_SHAPES)[number];
+
+export const TABLE_SHAPE_LABELS: Record<TableShape, string> = {
+  ROUND: "Round",
+  RECT: "Rectangular",
+};
+
+export function isTableShape(value: unknown): value is TableShape {
+  return typeof value === "string" && TABLE_SHAPES.includes(value as TableShape);
+}
 
 // --- Misc -------------------------------------------------------------------
 // Sentinel used in the UI to represent "no location" (Unassigned).

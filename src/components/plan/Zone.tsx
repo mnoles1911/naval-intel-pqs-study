@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { ItemDTO, LocationDTO } from "@/lib/types";
 import ItemChip, { DRAG_MIME } from "@/components/plan/ItemChip";
-import { accentColor, readyProgress } from "@/components/plan/planUtils";
+import { accentColor, purchasedProgress } from "@/components/plan/planUtils";
 
 interface Props {
   // null represents the Unassigned zone.
@@ -25,7 +25,7 @@ export default function Zone({
 }: Props) {
   const [isOver, setIsOver] = useState(false);
   const isUnassigned = locationId === null;
-  const { ready, total, pct } = readyProgress(items);
+  const { purchased, total, pct } = purchasedProgress(items);
 
   function handleDragOver(e: React.DragEvent) {
     // Allowing a drop requires cancelling the default handling.
@@ -83,11 +83,11 @@ export default function Zone({
           <div className="space-y-1">
             <div className="meter" role="presentation">
               <span
-                style={{ width: `${pct}%`, background: "var(--ready)" }}
+                style={{ width: `${pct}%`, background: "var(--purchased)" }}
               />
             </div>
             <p className="text-xs text-muted">
-              {ready} of {total} ready
+              {purchased} of {total} purchased
             </p>
           </div>
         )}

@@ -29,16 +29,14 @@ export default async function AppLayout({
               Placement Planner
             </span>
           </Link>
-          <nav className="flex items-center gap-1 sm:gap-2">
+          <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-4">
             <NavLink href="/">Dashboard</NavLink>
-            <NavLink href="/plan">Floor plan</NavLink>
-            <NavLink href="/budget">Budget</NavLink>
-            <NavLink href="/setup">Setup sheets</NavLink>
+            <NavLink href="/items">Items</NavLink>
             <NavLink href="/locations">Locations</NavLink>
+            <NavLink href="/plan">Floor plan</NavLink>
+            <NavLink href="/seating">Seating</NavLink>
+            <NavLink href="/setup">Setup sheets</NavLink>
             <span className="mx-1 hidden h-5 w-px bg-border sm:block" />
-            <Link href="/items/new" className="btn btn-primary btn-sm">
-              Add item
-            </Link>
             <LogoutButton />
           </nav>
         </div>

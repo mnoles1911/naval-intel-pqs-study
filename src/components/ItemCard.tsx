@@ -19,23 +19,6 @@ interface ItemCardProps {
   onChange: () => void;
 }
 
-const usd = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
-
-function money(value: number): string {
-  // Show cents only when the amount is not whole.
-  if (Number.isInteger(value)) return usd.format(value);
-  return value.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
 export default function ItemCard({ item, locations, onChange }: ItemCardProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -122,38 +105,20 @@ export default function ItemCard({ item, locations, onChange }: ItemCardProps) {
         </div>
       </div>
 
-      {(item.estimatedCost != null ||
-        item.actualCost != null ||
-        item.vendorName) ? (
+      {item.vendorName ? (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
-          {item.estimatedCost != null ? (
-            <span>
-              Est.{" "}
-              <span className="text-foreground">
-                {money(item.estimatedCost)}
-              </span>
-            </span>
-          ) : null}
-          {item.actualCost != null ? (
-            <span>
-              Actual{" "}
-              <span className="text-foreground">{money(item.actualCost)}</span>
-            </span>
-          ) : null}
-          {item.vendorName ? (
-            item.vendorUrl ? (
-              <a
-                href={item.vendorUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent hover:underline"
-              >
-                {item.vendorName}
-              </a>
-            ) : (
-              <span>{item.vendorName}</span>
-            )
-          ) : null}
+          {item.vendorUrl ? (
+            <a
+              href={item.vendorUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent hover:underline"
+            >
+              {item.vendorName}
+            </a>
+          ) : (
+            <span>{item.vendorName}</span>
+          )}
         </div>
       ) : null}
 

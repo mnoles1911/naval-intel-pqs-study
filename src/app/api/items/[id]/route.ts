@@ -50,8 +50,6 @@ export async function PATCH(request: Request, { params }: Params) {
     quantity,
     category,
     priority,
-    estimatedCost,
-    actualCost,
     vendorName,
     vendorUrl,
     notes,
@@ -94,24 +92,6 @@ export async function PATCH(request: Request, { params }: Params) {
       return NextResponse.json({ error: "Invalid priority" }, { status: 400 });
     }
     data.priority = priority;
-  }
-  for (const [key, value] of [
-    ["estimatedCost", estimatedCost],
-    ["actualCost", actualCost],
-  ] as const) {
-    if (value === undefined) continue;
-    if (value === null || value === "") {
-      data[key] = null;
-      continue;
-    }
-    const n = typeof value === "number" ? value : Number(value);
-    if (!Number.isFinite(n) || n < 0) {
-      return NextResponse.json(
-        { error: "Costs must be non-negative numbers" },
-        { status: 400 },
-      );
-    }
-    data[key] = n;
   }
   if (vendorName !== undefined) data.vendorName = str(vendorName);
   if (vendorUrl !== undefined) data.vendorUrl = str(vendorUrl);
