@@ -265,3 +265,38 @@ body {
     transition-duration: 0.001ms !important;
   }
 }
+
+/*
+ * E&M coastal toile veil — a faint on-brand pattern wash behind hero/empty
+ * areas. Drop the two PNGs into public/patterns/ and it lights up; until then
+ * it degrades gracefully to the plain background (a missing background-image
+ * simply shows nothing). Light theme uses the blue-on-white toile; dark uses
+ * the white-on-navy toile. Kept faint so it never fights body text.
+ */
+.toile-veil { position: relative; isolation: isolate; }
+.toile-veil::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("/patterns/toile-white.png");
+  background-repeat: repeat;
+  background-size: 460px auto;
+  opacity: 0.07;
+}
+.toile-veil > * { position: relative; }
+@media (prefers-color-scheme: dark) {
+  .toile-veil::before {
+    background-image: url("/patterns/toile-navy.png");
+    opacity: 0.1;
+  }
+}
+:root[data-theme="light"] .toile-veil::before {
+  background-image: url("/patterns/toile-white.png");
+  opacity: 0.07;
+}
+:root[data-theme="dark"] .toile-veil::before {
+  background-image: url("/patterns/toile-navy.png");
+  opacity: 0.1;
+}
