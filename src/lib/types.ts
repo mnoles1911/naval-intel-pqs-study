@@ -7,6 +7,16 @@ import type {
 
 // Serialized shapes returned by the JSON API (dates as ISO strings).
 
+export interface AuditLogDTO {
+  id: string;
+  actor: string;
+  action: string;
+  entity: string;
+  entityId: string | null;
+  summary: string;
+  createdAt: string;
+}
+
 export interface LocationDTO {
   id: string;
   name: string;
@@ -17,6 +27,7 @@ export interface LocationDTO {
   planW: number | null;
   planH: number | null;
   sortOrder: number;
+  seatable: boolean;
   shape: TableShape;
   seatCount: number;
   createdAt: string;

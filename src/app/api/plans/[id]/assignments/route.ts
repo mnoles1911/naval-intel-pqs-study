@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { SeatError, seatAtExactSeat, seatAtNextFree } from "@/lib/seatOps";
 
 type Params = { params: Promise<{ id: string }> };
@@ -68,6 +69,12 @@ export async function POST(request: Request, { params }: Params) {
     throw err;
   }
 
+  await logAudit({
+    action: "assign",
+    entity: "seat",
+    entityId: null,
+    summary: `Seated "${person.name}" at "${location.name}"`,
+  });
   return NextResponse.json(await assignmentsFor(planId));
 }
 
@@ -82,6 +89,13 @@ export async function DELETE(request: Request, { params }: Params) {
     return NextResponse.json({ error: "personId is required" }, { status: 400 });
   }
 
+  const person = await prisma.person.findUnique({ where: { id: personId } });
   await prisma.seatAssignment.deleteMany({ where: { planId, personId } });
+  await logAudit({
+    action: "unassign",
+    entity: "seat",
+    entityId: null,
+    summary: person ? `Unseated "${person.name}"` : `Unseated ${personId}`,
+  });
   return NextResponse.json({ ok: true });
 }

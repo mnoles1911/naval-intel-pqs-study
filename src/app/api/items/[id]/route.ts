@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import {
   isItemStatus,
   isItemCategory,
@@ -144,6 +145,12 @@ export async function PATCH(request: Request, { params }: Params) {
 
   try {
     const item = await prisma.item.update({ where: { id }, data });
+    await logAudit({
+      action: "update",
+      entity: "item",
+      entityId: item.id,
+      summary: `Updated item "${item.name}"`,
+    });
     return NextResponse.json(item);
   } catch {
     return NextResponse.json({ error: "Item not found" }, { status: 404 });
@@ -157,7 +164,14 @@ export async function DELETE(_request: Request, { params }: Params) {
 
   const { id } = await params;
   try {
+    const existing = await prisma.item.findUnique({ where: { id } });
     await prisma.item.delete({ where: { id } });
+    await logAudit({
+      action: "delete",
+      entity: "item",
+      entityId: id,
+      summary: existing ? `Deleted item "${existing.name}"` : `Deleted item ${id}`,
+    });
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Item not found" }, { status: 404 });

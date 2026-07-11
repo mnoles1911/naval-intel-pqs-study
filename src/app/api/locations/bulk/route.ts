@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { isTableShape } from "@/lib/constants";
 
 function str(value: unknown): string | null {
@@ -54,15 +55,21 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+    if (loc.seatable !== undefined && typeof loc.seatable !== "boolean") {
+      return NextResponse.json(
+        { error: `Table ${i + 1} has an invalid seatable flag` },
+        { status: 400 },
+      );
+    }
     let seatCount = 8;
     if (loc.seatCount !== undefined && loc.seatCount !== null) {
       const n =
         typeof loc.seatCount === "number"
           ? loc.seatCount
           : Number(loc.seatCount);
-      if (!Number.isInteger(n) || n < 1 || n > 40) {
+      if (!Number.isInteger(n) || n < 0 || n > 40) {
         return NextResponse.json(
-          { error: `Table ${i + 1} needs a whole seat count from 1 to 40` },
+          { error: `Table ${i + 1} needs a whole seat count from 0 to 40` },
           { status: 400 },
         );
       }
@@ -77,6 +84,7 @@ export async function POST(request: Request) {
       name: name.trim(),
       description: str(loc.description),
       color: str(loc.color),
+      seatable: typeof loc.seatable === "boolean" ? loc.seatable : true,
       shape: isTableShape(loc.shape) ? loc.shape : "ROUND",
       seatCount,
       sortOrder,
@@ -84,5 +92,11 @@ export async function POST(request: Request) {
   }
 
   const result = await prisma.location.createMany({ data });
+  await logAudit({
+    action: "create",
+    entity: "location",
+    entityId: null,
+    summary: `Bulk-added ${result.count} tables`,
+  });
   return NextResponse.json({ count: result.count }, { status: 201 });
 }

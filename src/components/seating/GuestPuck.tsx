@@ -93,7 +93,11 @@ export default function GuestPuck({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       {...bindTouchDrag(person.id)}
-      title={separated ? warning?.text : undefined}
+      title={
+        separated && warning?.text
+          ? `${person.name} — ${warning.text}`
+          : person.name
+      }
       className={`group flex touch-none items-center gap-2 rounded-lg border bg-surface-2 px-2 py-1.5 text-sm transition ${
         separated ? "border-danger" : "border-border hover:border-border-strong"
       } ${dragging ? "opacity-40" : ""}`}

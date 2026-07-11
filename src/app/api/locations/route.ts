@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { isTableShape } from "@/lib/constants";
 
 // GET /api/locations — list all locations (by manual order, then name).
@@ -30,10 +31,12 @@ function toFraction(value: unknown): number | null {
 
 // Validate a seat count. Returns the number when valid, null when not provided
 // (caller applies the default), or undefined when invalid (caller 400s).
+// A seat count of 0 is valid — a non-seatable location (bar, greeting table)
+// has no seats. Tables use 1..40.
 function toSeatCount(value: unknown): number | null | undefined {
   if (value === undefined || value === null || value === "") return null;
   const n = typeof value === "number" ? value : Number(value);
-  if (!Number.isInteger(n) || n < 1 || n > 40) return undefined;
+  if (!Number.isInteger(n) || n < 0 || n > 40) return undefined;
   return n;
 }
 
@@ -58,11 +61,18 @@ export async function POST(request: Request) {
     planW,
     planH,
     sortOrder,
+    seatable,
     shape,
     seatCount,
   } = (body ?? {}) as Record<string, unknown>;
   if (typeof name !== "string" || name.trim().length === 0) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  }
+  if (seatable !== undefined && typeof seatable !== "boolean") {
+    return NextResponse.json(
+      { error: "seatable must be true or false" },
+      { status: 400 },
+    );
   }
   if (shape !== undefined && !isTableShape(shape)) {
     return NextResponse.json({ error: "Invalid table shape" }, { status: 400 });
@@ -70,7 +80,7 @@ export async function POST(request: Request) {
   const seats = toSeatCount(seatCount);
   if (seats === undefined) {
     return NextResponse.json(
-      { error: "Seat count must be a whole number from 1 to 40" },
+      { error: "Seat count must be a whole number from 0 to 40" },
       { status: 400 },
     );
   }
@@ -88,9 +98,16 @@ export async function POST(request: Request) {
         typeof sortOrder === "number" && Number.isInteger(sortOrder)
           ? sortOrder
           : 0,
+      seatable: typeof seatable === "boolean" ? seatable : true,
       shape: isTableShape(shape) ? shape : "ROUND",
       seatCount: seats ?? 8,
     },
+  });
+  await logAudit({
+    action: "create",
+    entity: "location",
+    entityId: location.id,
+    summary: `Added location "${location.name}"`,
   });
   return NextResponse.json(location, { status: 201 });
 }

@@ -82,6 +82,16 @@ export function SeatingIcon(props: IconProps) {
   );
 }
 
+export function HistoryIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3.05 11a9 9 0 1 1 .5 4" />
+      <path d="M3 20v-5h5" />
+      <path d="M12 7v5l3.5 2" />
+    </Icon>
+  );
+}
+
 export function SetupIcon(props: IconProps) {
   return (
     <Icon {...props}>

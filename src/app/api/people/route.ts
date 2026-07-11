@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 
 // GET /api/people — list all guests (alphabetical).
 export async function GET() {
@@ -45,6 +46,12 @@ export async function POST(request: Request) {
 
   const person = await prisma.person.create({
     data: { name: name.trim(), notes: str(notes), partyId: resolvedPartyId },
+  });
+  await logAudit({
+    action: "create",
+    entity: "person",
+    entityId: person.id,
+    summary: `Added guest "${person.name}"`,
   });
   return NextResponse.json(person, { status: 201 });
 }

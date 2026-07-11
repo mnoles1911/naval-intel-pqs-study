@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { isTableShape } from "@/lib/constants";
 
 type Params = { params: Promise<{ id: string }> };
@@ -11,10 +12,12 @@ function str(value: unknown): string | null {
     : null;
 }
 
+// A seat count of 0 is valid — a non-seatable location (bar, greeting table)
+// has no seats. Tables use 1..40.
 function toSeatCount(value: unknown): number | null | undefined {
   if (value === undefined || value === null || value === "") return null;
   const n = typeof value === "number" ? value : Number(value);
-  if (!Number.isInteger(n) || n < 1 || n > 40) return undefined;
+  if (!Number.isInteger(n) || n < 0 || n > 40) return undefined;
   return n;
 }
 
@@ -47,10 +50,21 @@ export async function PATCH(request: Request, { params }: Params) {
     planW,
     planH,
     sortOrder,
+    seatable,
     shape,
     seatCount,
   } = (body ?? {}) as Record<string, unknown>;
   const data: Record<string, unknown> = {};
+
+  if (seatable !== undefined) {
+    if (typeof seatable !== "boolean") {
+      return NextResponse.json(
+        { error: "seatable must be true or false" },
+        { status: 400 },
+      );
+    }
+    data.seatable = seatable;
+  }
 
   if (name !== undefined) {
     if (typeof name !== "string" || name.trim().length === 0) {
@@ -88,7 +102,7 @@ export async function PATCH(request: Request, { params }: Params) {
     const seats = toSeatCount(seatCount);
     if (seats === undefined || seats === null) {
       return NextResponse.json(
-        { error: "Seat count must be a whole number from 1 to 40" },
+        { error: "Seat count must be a whole number from 0 to 40" },
         { status: 400 },
       );
     }
@@ -97,6 +111,12 @@ export async function PATCH(request: Request, { params }: Params) {
 
   try {
     const location = await prisma.location.update({ where: { id }, data });
+    await logAudit({
+      action: "update",
+      entity: "location",
+      entityId: location.id,
+      summary: `Updated location "${location.name}"`,
+    });
     return NextResponse.json(location);
   } catch {
     return NextResponse.json({ error: "Location not found" }, { status: 404 });
@@ -111,7 +131,16 @@ export async function DELETE(_request: Request, { params }: Params) {
 
   const { id } = await params;
   try {
+    const existing = await prisma.location.findUnique({ where: { id } });
     await prisma.location.delete({ where: { id } });
+    await logAudit({
+      action: "delete",
+      entity: "location",
+      entityId: id,
+      summary: existing
+        ? `Deleted location "${existing.name}"`
+        : `Deleted location ${id}`,
+    });
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Location not found" }, { status: 404 });

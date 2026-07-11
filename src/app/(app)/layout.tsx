@@ -7,10 +7,10 @@ import ThemeToggle from "@/components/ThemeToggle";
 import {
   DashboardIcon,
   ItemsIcon,
-  LocationsIcon,
   FloorPlanIcon,
   SeatingIcon,
   SetupIcon,
+  HistoryIcon,
 } from "@/components/icons";
 
 export default async function AppLayout({
@@ -45,17 +45,17 @@ export default async function AppLayout({
             <NavLink href="/items" icon={<ItemsIcon size={16} />}>
               Items
             </NavLink>
-            <NavLink href="/locations" icon={<LocationsIcon size={16} />}>
-              Locations
-            </NavLink>
-            <NavLink href="/plan" icon={<FloorPlanIcon size={16} />}>
-              Floor plan
+            <NavLink href="/locations" icon={<FloorPlanIcon size={16} />}>
+              Venue
             </NavLink>
             <NavLink href="/seating" icon={<SeatingIcon size={16} />}>
               Seating
             </NavLink>
             <NavLink href="/setup" icon={<SetupIcon size={16} />}>
               Setup sheets
+            </NavLink>
+            <NavLink href="/history" icon={<HistoryIcon size={16} />}>
+              History
             </NavLink>
             <span className="mx-1 hidden h-5 w-px bg-border sm:block" />
             <ThemeToggle />

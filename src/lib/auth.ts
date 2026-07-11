@@ -8,6 +8,8 @@ import {
   computeSessionToken,
   isValidSessionToken,
   safeEqual,
+  sessionActor,
+  type Actor,
 } from "./session";
 
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -25,9 +27,21 @@ export async function isAuthenticated(): Promise<boolean> {
   return isValidSessionToken(token);
 }
 
-// Sets the session cookie on the given response after a successful login.
-export async function setSessionCookie(res: NextResponse): Promise<void> {
-  const token = await computeSessionToken();
+// Reads the session cookie and returns which account is acting (or null when
+// unauthenticated). Every mutating route uses this to attribute audit entries.
+export async function getActor(): Promise<Actor | null> {
+  const store = await cookies();
+  const token = store.get(SESSION_COOKIE)?.value;
+  return sessionActor(token);
+}
+
+// Sets the session cookie on the given response after a successful login,
+// binding it to the account that logged in.
+export async function setSessionCookie(
+  res: NextResponse,
+  actor: Actor,
+): Promise<void> {
+  const token = await computeSessionToken(actor);
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",

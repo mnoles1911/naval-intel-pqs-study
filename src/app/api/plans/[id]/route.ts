@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -71,6 +72,12 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 
   const updated = await prisma.seatingPlan.findUnique({ where: { id } });
+  await logAudit({
+    action: "update",
+    entity: "plan",
+    entityId: id,
+    summary: `Updated plan "${updated?.name ?? exists.name}"`,
+  });
   return NextResponse.json(updated);
 }
 
@@ -99,5 +106,11 @@ export async function DELETE(_request: Request, { params }: Params) {
       });
     }
   }
+  await logAudit({
+    action: "delete",
+    entity: "plan",
+    entityId: id,
+    summary: `Deleted plan "${plan.name}"`,
+  });
   return NextResponse.json({ ok: true });
 }

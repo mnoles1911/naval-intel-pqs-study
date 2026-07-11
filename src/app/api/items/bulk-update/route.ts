@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import {
   isItemStatus,
   isItemCategory,
@@ -84,6 +85,12 @@ export async function POST(request: Request) {
   const result = await prisma.item.updateMany({
     where: { id: { in: itemIds } },
     data,
+  });
+  await logAudit({
+    action: "update",
+    entity: "item",
+    entityId: null,
+    summary: `Updated ${result.count} items`,
   });
   return NextResponse.json({ count: result.count });
 }

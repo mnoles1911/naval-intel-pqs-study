@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { LOCATION_COLORS } from "@/lib/constants";
 
 // POST /api/people/link — { aId, bId }
@@ -79,5 +80,11 @@ export async function POST(request: Request) {
     prisma.party.findUnique({ where: { id: partyId } }),
     prisma.person.findMany({ where: { partyId }, select: { id: true } }),
   ]);
+  await logAudit({
+    action: "update",
+    entity: "party",
+    entityId: partyId,
+    summary: `Linked "${a.name}" and "${b.name}"`,
+  });
   return NextResponse.json({ party, personIds: members.map((m) => m.id) });
 }

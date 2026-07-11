@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { parseCsv } from "@/lib/csv";
 import {
   ITEM_STATUSES,
@@ -152,5 +153,11 @@ export async function POST(request: Request) {
     const result = await prisma.item.createMany({ data: toCreate });
     imported = result.count;
   }
+  await logAudit({
+    action: "import",
+    entity: "item",
+    entityId: null,
+    summary: `Imported ${imported} items`,
+  });
   return NextResponse.json({ imported, skipped });
 }

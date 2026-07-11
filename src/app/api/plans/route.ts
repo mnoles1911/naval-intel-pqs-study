@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 
 // GET /api/plans — list all seating plans (oldest first).
 export async function GET() {
@@ -73,6 +74,12 @@ export async function POST(request: Request) {
         ? { create: copyAssignments }
         : undefined,
     },
+  });
+  await logAudit({
+    action: "create",
+    entity: "plan",
+    entityId: plan.id,
+    summary: `Created plan "${plan.name}"`,
   });
   return NextResponse.json(plan, { status: 201 });
 }

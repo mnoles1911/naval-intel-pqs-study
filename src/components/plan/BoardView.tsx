@@ -9,9 +9,15 @@ interface Props {
   locations: LocationDTO[];
   items: ItemDTO[];
   onReassign: (itemId: string, locationId: string | null) => void;
+  onManage?: (locationId: string) => void;
 }
 
-export default function BoardView({ locations, items, onReassign }: Props) {
+export default function BoardView({
+  locations,
+  items,
+  onReassign,
+  onManage,
+}: Props) {
   const ordered = useMemo(() => sortLocations(locations), [locations]);
 
   // Group items by location id once; O(n) instead of filtering per zone.
@@ -41,6 +47,7 @@ export default function BoardView({ locations, items, onReassign }: Props) {
           items={byLocation.map.get(loc.id) ?? []}
           allLocations={ordered}
           onReassign={onReassign}
+          onManage={onManage}
         />
       ))}
 

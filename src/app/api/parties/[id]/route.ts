@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -35,6 +36,12 @@ export async function PATCH(request: Request, { params }: Params) {
 
   try {
     const party = await prisma.party.update({ where: { id }, data });
+    await logAudit({
+      action: "update",
+      entity: "party",
+      entityId: party.id,
+      summary: `Updated party "${party.name}"`,
+    });
     return NextResponse.json(party);
   } catch {
     return NextResponse.json({ error: "Party not found" }, { status: 404 });
@@ -49,7 +56,16 @@ export async function DELETE(_request: Request, { params }: Params) {
 
   const { id } = await params;
   try {
+    const existing = await prisma.party.findUnique({ where: { id } });
     await prisma.party.delete({ where: { id } });
+    await logAudit({
+      action: "delete",
+      entity: "party",
+      entityId: id,
+      summary: existing
+        ? `Disbanded party "${existing.name}"`
+        : `Disbanded party ${id}`,
+    });
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Party not found" }, { status: 404 });
