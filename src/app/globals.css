@@ -1,68 +1,83 @@
 @import "tailwindcss";
 
 /*
- * Wedding Placement Planner — design system.
+ * Wedding Placement Planner — design system (blue-and-white coastal rework).
  *
- * An editorial, wedding-stationery aesthetic: warm ivory paper, ink text,
- * an antique-gold accent, and a serif display face paired with a clean sans.
- * Component classes below (.btn, .card, .input, .chip, …) are the shared
- * vocabulary every screen uses so the whole app reads as one system.
+ * Blue-and-white coastal elegance for Matt & Emma (Alexandria, VA): crisp
+ * cool-white paper, deep porcelain-navy ink, a porcelain/delft-blue accent,
+ * eucalyptus green, and a warm antique-gold metallic. Component classes
+ * (.btn, .card, .input, .chip, …) are unchanged — the whole app restyles from
+ * this one file with no component edits.
+ *
+ * DROP-IN: replace src/app/globals.css with this file. Token + class names
+ * match the previous version 1:1. The only NEW tokens are --gold / --gold-soft
+ * (+ their @theme mappings) — additive and optional. Dark theme is provided
+ * BOTH via prefers-color-scheme AND :root[data-theme="dark"] so an in-app
+ * toggle works in either direction.
  */
 
 :root {
-  /* Surfaces */
-  --background: #f6f2ea; /* warm ivory paper */
-  --surface: #fffdf9; /* raised card */
-  --surface-2: #f1ebe0; /* sunken / hover wells */
-  --foreground: #2a2622; /* ink */
-  --muted: #8a8178; /* soft taupe text */
-  --border: #e6ddcf; /* hairline */
-  --border-strong: #d8ccb8;
+  /* Surfaces — cool porcelain white, crisp white cards */
+  --background: #f3f6f9;
+  --surface: #ffffff;
+  --surface-2: #e8eef4;
+  --foreground: #223049; /* deep porcelain navy ink */
+  --muted: #6a7789; /* blue-slate */
+  --border: #dbe3ec;
+  --border-strong: #c3cddb;
 
   /* Accents */
-  --accent: #a9834e; /* antique gold */
-  --accent-hover: #916e3e;
-  --accent-soft: #f0e6d4; /* gold wash */
-  --on-accent: #fffdf9;
-  --rose: #b98a8a;
-  --sage: #8a9a7b;
-  --ink-blue: #5f7488;
+  --accent: #3a5c93; /* porcelain / delft blue — the hero */
+  --accent-hover: #2f4b78;
+  --accent-soft: #dde6f2; /* pale porcelain wash */
+  --on-accent: #ffffff;
+  --rose: #c49a9a; /* dusty rose */
+  --sage: #83a897; /* eucalyptus */
+  --ink-blue: #6d8bb5; /* cornflower — the toile blue */
+
+  /* Metallic accent — NEW (premium trim: brandmark ring, dividers) */
+  --gold: #c2a24f;
+  --gold-soft: #efe6cd;
 
   /* Status */
-  --needed: #b8823a; /* amber */
-  --purchased: #5f7488; /* slate blue */
-  --ready: #6f8f6a; /* garden green */
-  --danger: #b4534b;
+  --needed: #bb8a3c; /* warm gold-amber */
+  --purchased: #5d7aa6; /* denim blue */
+  --ready: #6f9179; /* eucalyptus success */
+  --danger: #c15c4f; /* muted coral-red */
 
   /* Effects */
   --ring: color-mix(in srgb, var(--accent) 45%, transparent);
-  --shadow-sm: 0 1px 2px rgba(51, 41, 28, 0.05);
-  --shadow-md: 0 6px 20px -8px rgba(51, 41, 28, 0.18);
-  --shadow-lg: 0 18px 48px -18px rgba(51, 41, 28, 0.28);
+  --shadow-sm: 0 1px 2px rgba(28, 40, 58, 0.06);
+  --shadow-md: 0 6px 20px -8px rgba(28, 40, 58, 0.2);
+  --shadow-lg: 0 18px 48px -18px rgba(28, 40, 58, 0.3);
   --radius: 0.85rem;
 }
 
+/* Dark — system preference */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #17150f;
-    --surface: #201d16;
-    --surface-2: #2a261d;
-    --foreground: #efe9dd;
-    --muted: #a79d8d;
-    --border: #322d22;
-    --border-strong: #423b2c;
+    --background: #121821;
+    --surface: #1a2330;
+    --surface-2: #232f3f;
+    --foreground: #e8edf4;
+    --muted: #97a5ba;
+    --border: #2a3546;
+    --border-strong: #3a4759;
 
-    --accent: #d8b078;
-    --accent-hover: #e6c390;
-    --accent-soft: #33291b;
-    --on-accent: #1a160f;
-    --rose: #cfa1a1;
-    --sage: #a6b795;
-    --ink-blue: #90a6bb;
+    --accent: #7ea3d6;
+    --accent-hover: #97b7e2;
+    --accent-soft: #1c2a3f;
+    --on-accent: #0c1420;
+    --rose: #d3a9a9;
+    --sage: #9cc0b0;
+    --ink-blue: #8fa9cf;
+
+    --gold: #d8bd85;
+    --gold-soft: #2c2717;
 
     --needed: #d6a659;
-    --purchased: #90a6bb;
-    --ready: #93b58c;
+    --purchased: #8fa9cf;
+    --ready: #8fbb9c;
     --danger: #e0857c;
 
     --ring: color-mix(in srgb, var(--accent) 40%, transparent);
@@ -70,6 +85,32 @@
     --shadow-md: 0 8px 24px -10px rgba(0, 0, 0, 0.55);
     --shadow-lg: 0 20px 50px -18px rgba(0, 0, 0, 0.6);
   }
+}
+
+/* Explicit toggle overrides the media query in both directions. */
+:root[data-theme="light"] {
+  --background: #f3f6f9; --surface: #ffffff; --surface-2: #e8eef4;
+  --foreground: #223049; --muted: #6a7789; --border: #dbe3ec;
+  --border-strong: #c3cddb; --accent: #3a5c93; --accent-hover: #2f4b78;
+  --accent-soft: #dde6f2; --on-accent: #ffffff; --rose: #c49a9a;
+  --sage: #83a897; --ink-blue: #6d8bb5; --gold: #c2a24f; --gold-soft: #efe6cd;
+  --needed: #bb8a3c; --purchased: #5d7aa6; --ready: #6f9179; --danger: #c15c4f;
+  --ring: color-mix(in srgb, var(--accent) 45%, transparent);
+  --shadow-sm: 0 1px 2px rgba(28,40,58,.06);
+  --shadow-md: 0 6px 20px -8px rgba(28,40,58,.2);
+  --shadow-lg: 0 18px 48px -18px rgba(28,40,58,.3);
+}
+:root[data-theme="dark"] {
+  --background: #121821; --surface: #1a2330; --surface-2: #232f3f;
+  --foreground: #e8edf4; --muted: #97a5ba; --border: #2a3546;
+  --border-strong: #3a4759; --accent: #7ea3d6; --accent-hover: #97b7e2;
+  --accent-soft: #1c2a3f; --on-accent: #0c1420; --rose: #d3a9a9;
+  --sage: #9cc0b0; --ink-blue: #8fa9cf; --gold: #d8bd85; --gold-soft: #2c2717;
+  --needed: #d6a659; --purchased: #8fa9cf; --ready: #8fbb9c; --danger: #e0857c;
+  --ring: color-mix(in srgb, var(--accent) 40%, transparent);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
+  --shadow-md: 0 8px 24px -10px rgba(0,0,0,.55);
+  --shadow-lg: 0 20px 50px -18px rgba(0,0,0,.6);
 }
 
 @theme inline {
@@ -87,6 +128,8 @@
   --color-rose: var(--rose);
   --color-sage: var(--sage);
   --color-ink-blue: var(--ink-blue);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
   --color-needed: var(--needed);
   --color-purchased: var(--purchased);
   --color-ready: var(--ready);
