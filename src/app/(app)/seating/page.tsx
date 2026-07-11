@@ -72,7 +72,9 @@ export default function SeatingPage() {
     setAssignments(seats);
     setPeople(ppl);
     setParties(pt);
-    setTables(locs);
+    // Only seatable locations are tables; bars / greeting areas never appear
+    // in the seating chart even though they still hold item assignments.
+    setTables(locs.filter((l) => l.seatable));
   }, []);
 
   useEffect(() => {

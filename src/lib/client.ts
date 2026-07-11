@@ -35,6 +35,7 @@ export interface LocationInput {
   planW?: number | null;
   planH?: number | null;
   sortOrder?: number;
+  seatable?: boolean;
   shape?: TableShape;
   seatCount?: number;
 }

@@ -11,10 +11,12 @@ function str(value: unknown): string | null {
     : null;
 }
 
+// A seat count of 0 is valid — a non-seatable location (bar, greeting table)
+// has no seats. Tables use 1..40.
 function toSeatCount(value: unknown): number | null | undefined {
   if (value === undefined || value === null || value === "") return null;
   const n = typeof value === "number" ? value : Number(value);
-  if (!Number.isInteger(n) || n < 1 || n > 40) return undefined;
+  if (!Number.isInteger(n) || n < 0 || n > 40) return undefined;
   return n;
 }
 
@@ -47,10 +49,21 @@ export async function PATCH(request: Request, { params }: Params) {
     planW,
     planH,
     sortOrder,
+    seatable,
     shape,
     seatCount,
   } = (body ?? {}) as Record<string, unknown>;
   const data: Record<string, unknown> = {};
+
+  if (seatable !== undefined) {
+    if (typeof seatable !== "boolean") {
+      return NextResponse.json(
+        { error: "seatable must be true or false" },
+        { status: 400 },
+      );
+    }
+    data.seatable = seatable;
+  }
 
   if (name !== undefined) {
     if (typeof name !== "string" || name.trim().length === 0) {
@@ -88,7 +101,7 @@ export async function PATCH(request: Request, { params }: Params) {
     const seats = toSeatCount(seatCount);
     if (seats === undefined || seats === null) {
       return NextResponse.json(
-        { error: "Seat count must be a whole number from 1 to 40" },
+        { error: "Seat count must be a whole number from 0 to 40" },
         { status: 400 },
       );
     }

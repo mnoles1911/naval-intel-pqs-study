@@ -32,39 +32,60 @@ export async function POST(request: Request) {
   const unauth = await requireApiAuth();
   if (unauth) return unauth;
 
-  const form = await request.formData();
-  const file = form.get("file");
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: "No file provided" }, { status: 400 });
-  }
-  if (!ALLOWED.has(file.type)) {
+  try {
+    const form = await request.formData();
+    const file = form.get("file");
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+    if (!ALLOWED.has(file.type)) {
+      return NextResponse.json(
+        { error: "Unsupported image type" },
+        { status: 400 },
+      );
+    }
+    if (file.size > MAX_BYTES) {
+      return NextResponse.json(
+        { error: "Image is too large (max 8 MB)" },
+        { status: 400 },
+      );
+    }
+
+    const filename = `${randomUUID()}.${EXT[file.type]}`;
+
+    // Cloud path: store in Vercel Blob.
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const blob = await put(`items/${filename}`, file, {
+        access: "public",
+        contentType: file.type,
+      });
+      return NextResponse.json({ url: blob.url });
+    }
+
+    // On Vercel the filesystem is read-only, so the public/uploads fallback
+    // can never work there — fail loudly with actionable guidance instead of
+    // attempting a doomed write.
+    if (process.env.VERCEL) {
+      return NextResponse.json(
+        {
+          error:
+            "Image uploads require a Vercel Blob store. In the Vercel dashboard go to Storage → Create Database → Blob to create one (this adds the BLOB_READ_WRITE_TOKEN env var), then redeploy.",
+        },
+        { status: 503 },
+      );
+    }
+
+    // Local-dev fallback: write to public/uploads.
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    await mkdir(uploadDir, { recursive: true });
+    await writeFile(path.join(uploadDir, filename), bytes);
+    return NextResponse.json({ url: `/uploads/${filename}` });
+  } catch (err) {
+    console.error("Upload failed:", err);
     return NextResponse.json(
-      { error: "Unsupported image type" },
-      { status: 400 },
+      { error: "Upload failed. Please try again." },
+      { status: 500 },
     );
   }
-  if (file.size > MAX_BYTES) {
-    return NextResponse.json(
-      { error: "Image is too large (max 8 MB)" },
-      { status: 400 },
-    );
-  }
-
-  const filename = `${randomUUID()}.${EXT[file.type]}`;
-
-  // Cloud path: store in Vercel Blob.
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(`items/${filename}`, file, {
-      access: "public",
-      contentType: file.type,
-    });
-    return NextResponse.json({ url: blob.url });
-  }
-
-  // Local-dev fallback: write to public/uploads.
-  const bytes = Buffer.from(await file.arrayBuffer());
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(path.join(uploadDir, filename), bytes);
-  return NextResponse.json({ url: `/uploads/${filename}` });
 }

@@ -33,8 +33,11 @@ model Location {
   planH       Float?
   // Manual ordering for the plan board / setup sheets (lower shows first).
   sortOrder   Int      @default(0)
-  // Seating: a Location doubles as a table. Its shape is one of TABLE_SHAPES
-  // (ROUND / RECT) and seatCount is how many guests it seats.
+  // Seating: a seatable Location doubles as a table — its shape is one of
+  // TABLE_SHAPES (ROUND / RECT) and seatCount is how many guests it seats.
+  // Non-seatable locations (bar, greeting table, gift table, …) still take
+  // item assignments and appear on the map, but never in the seating chart.
+  seatable    Boolean  @default(true)
   shape       String   @default("ROUND")
   seatCount   Int      @default(8)
   items       Item[]
