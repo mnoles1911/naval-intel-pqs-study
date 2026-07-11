@@ -8,7 +8,6 @@ import type { ItemDTO, LocationDTO } from "@/lib/types";
 export const STATUS_COLOR: Record<ItemStatus, string> = {
   NEEDED: "var(--needed)",
   PURCHASED: "var(--purchased)",
-  READY: "var(--ready)",
 };
 
 // A location's dot/marker color, falling back to the theme accent.
@@ -17,17 +16,17 @@ export function accentColor(color: string | null): string {
 }
 
 export interface Progress {
-  ready: number;
+  purchased: number;
   total: number;
   pct: number; // 0–100
 }
 
-// Ready-progress for a set of items ("ready" = packed and ready for the venue).
-export function readyProgress(items: ItemDTO[]): Progress {
+// Purchased-progress for a set of items (how many have been acquired).
+export function purchasedProgress(items: ItemDTO[]): Progress {
   const total = items.length;
-  const ready = items.filter((it) => it.status === "READY").length;
-  const pct = total === 0 ? 0 : Math.round((ready / total) * 100);
-  return { ready, total, pct };
+  const purchased = items.filter((it) => it.status === "PURCHASED").length;
+  const pct = total === 0 ? 0 : Math.round((purchased / total) * 100);
+  return { purchased, total, pct };
 }
 
 // A sensible default spread on the map canvas for locations that have no saved

@@ -28,8 +28,6 @@ export interface ItemDTO {
   quantity: number;
   category: ItemCategory | null;
   priority: ItemPriority;
-  estimatedCost: number | null;
-  actualCost: number | null;
   vendorName: string | null;
   vendorUrl: string | null;
   notes: string | null;

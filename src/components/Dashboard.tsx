@@ -20,7 +20,6 @@ const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
   { value: "ALL", label: "All" },
   { value: "NEEDED", label: ITEM_STATUS_LABELS.NEEDED },
   { value: "PURCHASED", label: ITEM_STATUS_LABELS.PURCHASED },
-  { value: "READY", label: ITEM_STATUS_LABELS.READY },
 ];
 
 export default function Dashboard() {
@@ -91,27 +90,26 @@ export default function Dashboard() {
   );
 
   const summary = useMemo(() => {
-    let ready = 0;
     let purchased = 0;
     let needed = 0;
     let unassigned = 0;
     for (const item of items) {
-      if (item.status === "READY") ready += 1;
-      else if (item.status === "PURCHASED") purchased += 1;
+      if (item.status === "PURCHASED") purchased += 1;
       else needed += 1;
       if (item.locationId === null) unassigned += 1;
     }
     return {
       total: items.length,
-      ready,
       purchased,
       needed,
       unassigned,
     };
   }, [items]);
 
-  const readinessPct =
-    summary.total === 0 ? 0 : Math.round((summary.ready / summary.total) * 100);
+  const purchasedPct =
+    summary.total === 0
+      ? 0
+      : Math.round((summary.purchased / summary.total) * 100);
 
   const itemsFor = useCallback(
     (locationId: string | null) =>
@@ -168,13 +166,8 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <SummaryTile label="Total items" value={summary.total} />
-            <SummaryTile
-              label="Ready"
-              value={summary.ready}
-              accent="text-ready"
-            />
             <SummaryTile
               label="Purchased"
               value={summary.purchased}
@@ -190,16 +183,16 @@ export default function Dashboard() {
 
           <section className="card mt-4 p-4">
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-sm font-medium">Overall readiness</span>
+              <span className="text-sm font-medium">Purchased</span>
               <span className="text-sm text-muted">
-                {summary.ready} of {summary.total} ready · {readinessPct}%
+                {summary.purchased} of {summary.total} · {purchasedPct}%
               </span>
             </div>
             <div className="meter mt-2">
               <span
                 style={{
-                  width: `${readinessPct}%`,
-                  background: "var(--ready)",
+                  width: `${purchasedPct}%`,
+                  background: "var(--purchased)",
                 }}
               />
             </div>
@@ -306,9 +299,11 @@ function LocationSection({
   locations: LocationDTO[];
   onChange: () => void;
 }) {
-  const readyCount = items.filter((it) => it.status === "READY").length;
-  const readyPct =
-    items.length === 0 ? 0 : Math.round((readyCount / items.length) * 100);
+  const purchasedCount = items.filter(
+    (it) => it.status === "PURCHASED",
+  ).length;
+  const purchasedPct =
+    items.length === 0 ? 0 : Math.round((purchasedCount / items.length) * 100);
 
   return (
     <section>
@@ -325,10 +320,10 @@ function LocationSection({
           <div className="flex items-center gap-2">
             <div className="meter h-1.5 w-24">
               <span
-                style={{ width: `${readyPct}%`, background: "var(--ready)" }}
+                style={{ width: `${purchasedPct}%`, background: "var(--purchased)" }}
               />
             </div>
-            <span className="text-xs text-muted">{readyPct}% ready</span>
+            <span className="text-xs text-muted">{purchasedPct}% purchased</span>
           </div>
         ) : null}
       </div>

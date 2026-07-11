@@ -100,8 +100,8 @@ model Item {
   id          String     @id @default(cuid())
   name        String
   description String?
-  // Acquisition + readiness lifecycle. One of ITEM_STATUSES
-  // (NEEDED -> PURCHASED -> READY). See src/lib/constants.ts.
+  // Acquisition status. One of ITEM_STATUSES (NEEDED / PURCHASED).
+  // See src/lib/constants.ts.
   status      String    @default("NEEDED")
   // How many of this physical object are needed (e.g. 24 votives).
   quantity    Int       @default(1)
@@ -109,9 +109,6 @@ model Item {
   category    String?
   // Planning priority. One of ITEM_PRIORITIES (LOW/MEDIUM/HIGH).
   priority    String    @default("MEDIUM")
-  // Budget tracking (in whole currency units; couple's local currency).
-  estimatedCost Float?
-  actualCost    Float?
   // Where it's coming from.
   vendorName  String?
   vendorUrl   String?

@@ -55,11 +55,9 @@ export default function SetupItemRow({
               className="dot"
               style={{
                 backgroundColor:
-                  item.status === "READY"
-                    ? "var(--ready)"
-                    : item.status === "PURCHASED"
-                      ? "var(--purchased)"
-                      : "var(--needed)",
+                  item.status === "PURCHASED"
+                    ? "var(--purchased)"
+                    : "var(--needed)",
               }}
               aria-hidden
             />

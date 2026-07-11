@@ -16,7 +16,7 @@ type SeedLocation = {
 type SeedItem = {
   name: string;
   description?: string;
-  status: "NEEDED" | "PURCHASED" | "READY";
+  status: "NEEDED" | "PURCHASED";
   quantity?: number;
   category?:
     | "FLORALS"
@@ -29,8 +29,6 @@ type SeedItem = {
     | "FAVORS"
     | "OTHER";
   priority?: "LOW" | "MEDIUM" | "HIGH";
-  estimatedCost?: number;
-  actualCost?: number;
   vendorName?: string;
   vendorUrl?: string;
   notes?: string;
@@ -95,12 +93,10 @@ const ITEMS: SeedItem[] = [
   {
     name: "Welcome sign",
     description: "Acrylic 24x36 sign on a gold easel greeting guests by name.",
-    status: "READY",
+    status: "PURCHASED",
     quantity: 1,
     category: "SIGNAGE",
     priority: "HIGH",
-    estimatedCost: 120,
-    actualCost: 135,
     vendorName: "Etsy — LetteredLane",
     vendorUrl: "https://www.etsy.com/",
     notes: "Easel is in the garage; sign wrapped in bubble wrap.",
@@ -113,7 +109,6 @@ const ITEMS: SeedItem[] = [
     quantity: 1,
     category: "STATIONERY",
     priority: "HIGH",
-    estimatedCost: 60,
     notes: "Waiting on final seating chart before printing.",
     location: "Welcome / Sign-in Table",
   },
@@ -124,19 +119,15 @@ const ITEMS: SeedItem[] = [
     quantity: 1,
     category: "STATIONERY",
     priority: "MEDIUM",
-    estimatedCost: 45,
-    actualCost: 42,
     location: "Welcome / Sign-in Table",
   },
   {
     name: "Ring dish",
     description: "Small ceramic dish to hold the rings during the ceremony.",
-    status: "READY",
+    status: "PURCHASED",
     quantity: 1,
     category: "OTHER",
     priority: "LOW",
-    estimatedCost: 20,
-    actualCost: 18,
     location: "Ceremony Arch",
   },
   {
@@ -146,7 +137,6 @@ const ITEMS: SeedItem[] = [
     quantity: 24,
     category: "LIGHTING",
     priority: "MEDIUM",
-    estimatedCost: 72,
     vendorName: "Amazon",
     notes: "Buy flameless candles too — venue bans open flame on the aisle.",
     location: "Ceremony Arch",
@@ -158,7 +148,6 @@ const ITEMS: SeedItem[] = [
     quantity: 100,
     category: "TABLEWARE",
     priority: "HIGH",
-    estimatedCost: 250,
     vendorName: "Rentals — Borrowed & Blue",
     location: "Cocktail Bar",
   },
@@ -168,8 +157,6 @@ const ITEMS: SeedItem[] = [
     quantity: 200,
     category: "STATIONERY",
     priority: "LOW",
-    estimatedCost: 30,
-    actualCost: 28,
     location: "Cocktail Bar",
   },
   {
@@ -179,7 +166,6 @@ const ITEMS: SeedItem[] = [
     quantity: 30,
     category: "FLORALS",
     priority: "MEDIUM",
-    estimatedCost: 90,
     location: "Guest Tables",
   },
   {
@@ -189,8 +175,6 @@ const ITEMS: SeedItem[] = [
     quantity: 10,
     category: "STATIONERY",
     priority: "MEDIUM",
-    estimatedCost: 40,
-    actualCost: 40,
     location: "Guest Tables",
   },
   {
@@ -200,19 +184,16 @@ const ITEMS: SeedItem[] = [
     quantity: 100,
     category: "STATIONERY",
     priority: "HIGH",
-    estimatedCost: 150,
     notes: "Final menu confirmed with caterer — ready to send to printer.",
     location: "Head Table",
   },
   {
     name: "Gold candlesticks",
     description: "Pair of tall tapered candlesticks flanking the couple.",
-    status: "READY",
+    status: "PURCHASED",
     quantity: 2,
     category: "LIGHTING",
     priority: "LOW",
-    estimatedCost: 55,
-    actualCost: 60,
     location: "Head Table",
   },
   // Intentionally unassigned (no location yet):
@@ -223,7 +204,6 @@ const ITEMS: SeedItem[] = [
     quantity: 1,
     category: "OTHER",
     priority: "MEDIUM",
-    estimatedCost: 35,
     location: null,
   },
   {
@@ -232,7 +212,6 @@ const ITEMS: SeedItem[] = [
     quantity: 6,
     category: "LIGHTING",
     priority: "LOW",
-    estimatedCost: 48,
     location: null,
   },
 ];
