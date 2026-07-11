@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
-import { isItemStatus, UNASSIGNED } from "@/lib/constants";
+import {
+  isItemStatus,
+  isItemCategory,
+  isItemPriority,
+  UNASSIGNED,
+} from "@/lib/constants";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -18,6 +23,12 @@ export async function GET(_request: Request, { params }: Params) {
   return NextResponse.json(item);
 }
 
+function str(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : null;
+}
+
 // PATCH /api/items/:id — partial update. Any subset of fields may be sent.
 // Set locationId to the UNASSIGNED sentinel (or null) to unassign.
 export async function PATCH(request: Request, { params }: Params) {
@@ -32,8 +43,21 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { name, description, status, photoUrl, locationId } = (body ??
-    {}) as Record<string, unknown>;
+  const {
+    name,
+    description,
+    status,
+    quantity,
+    category,
+    priority,
+    estimatedCost,
+    actualCost,
+    vendorName,
+    vendorUrl,
+    notes,
+    photoUrl,
+    locationId,
+  } = (body ?? {}) as Record<string, unknown>;
   const data: Record<string, unknown> = {};
 
   if (name !== undefined) {
@@ -42,28 +66,62 @@ export async function PATCH(request: Request, { params }: Params) {
     }
     data.name = name.trim();
   }
-  if (description !== undefined) {
-    data.description =
-      typeof description === "string" && description.trim().length > 0
-        ? description.trim()
-        : null;
-  }
+  if (description !== undefined) data.description = str(description);
   if (status !== undefined) {
     if (!isItemStatus(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
     data.status = status;
   }
+  if (quantity !== undefined) {
+    const n = typeof quantity === "number" ? quantity : Number(quantity);
+    if (!Number.isInteger(n) || n < 1) {
+      return NextResponse.json(
+        { error: "Quantity must be a whole number of at least 1" },
+        { status: 400 },
+      );
+    }
+    data.quantity = n;
+  }
+  if (category !== undefined) {
+    if (category !== null && !isItemCategory(category)) {
+      return NextResponse.json({ error: "Invalid category" }, { status: 400 });
+    }
+    data.category = isItemCategory(category) ? category : null;
+  }
+  if (priority !== undefined) {
+    if (!isItemPriority(priority)) {
+      return NextResponse.json({ error: "Invalid priority" }, { status: 400 });
+    }
+    data.priority = priority;
+  }
+  for (const [key, value] of [
+    ["estimatedCost", estimatedCost],
+    ["actualCost", actualCost],
+  ] as const) {
+    if (value === undefined) continue;
+    if (value === null || value === "") {
+      data[key] = null;
+      continue;
+    }
+    const n = typeof value === "number" ? value : Number(value);
+    if (!Number.isFinite(n) || n < 0) {
+      return NextResponse.json(
+        { error: "Costs must be non-negative numbers" },
+        { status: 400 },
+      );
+    }
+    data[key] = n;
+  }
+  if (vendorName !== undefined) data.vendorName = str(vendorName);
+  if (vendorUrl !== undefined) data.vendorUrl = str(vendorUrl);
+  if (notes !== undefined) data.notes = str(notes);
   if (photoUrl !== undefined) {
     data.photoUrl =
       typeof photoUrl === "string" && photoUrl.length > 0 ? photoUrl : null;
   }
   if (locationId !== undefined) {
-    if (
-      locationId === null ||
-      locationId === UNASSIGNED ||
-      locationId === ""
-    ) {
+    if (locationId === null || locationId === UNASSIGNED || locationId === "") {
       data.locationId = null;
     } else if (typeof locationId === "string") {
       const loc = await prisma.location.findUnique({

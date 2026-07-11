@@ -2,7 +2,7 @@
 // Error (with the server's message when available) on non-2xx responses.
 
 import type { LocationDTO, ItemDTO } from "@/lib/types";
-import type { ItemStatus } from "@/lib/constants";
+import type { ItemStatus, ItemCategory, ItemPriority } from "@/lib/constants";
 
 async function handle<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -14,14 +14,22 @@ async function handle<T>(res: Response): Promise<T> {
 
 // --- Locations ---
 
+export interface LocationInput {
+  name?: string;
+  description?: string | null;
+  color?: string | null;
+  planX?: number | null;
+  planY?: number | null;
+  sortOrder?: number;
+}
+
 export function fetchLocations(): Promise<LocationDTO[]> {
   return fetch("/api/locations").then((r) => handle<LocationDTO[]>(r));
 }
 
-export function createLocation(input: {
-  name: string;
-  description?: string;
-}): Promise<LocationDTO> {
+export function createLocation(
+  input: LocationInput & { name: string },
+): Promise<LocationDTO> {
   return fetch("/api/locations", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -31,7 +39,7 @@ export function createLocation(input: {
 
 export function updateLocation(
   id: string,
-  input: { name?: string; description?: string | null },
+  input: LocationInput,
 ): Promise<LocationDTO> {
   return fetch(`/api/locations/${id}`, {
     method: "PATCH",
@@ -47,6 +55,23 @@ export function deleteLocation(id: string): Promise<void> {
 }
 
 // --- Items ---
+
+// Every writable item field. Create requires `name`; all others optional.
+export interface ItemInput {
+  name?: string;
+  description?: string | null;
+  status?: ItemStatus;
+  quantity?: number;
+  category?: ItemCategory | null;
+  priority?: ItemPriority;
+  estimatedCost?: number | null;
+  actualCost?: number | null;
+  vendorName?: string | null;
+  vendorUrl?: string | null;
+  notes?: string | null;
+  photoUrl?: string | null;
+  locationId?: string | null;
+}
 
 export function fetchItems(params?: {
   status?: ItemStatus;
@@ -65,13 +90,9 @@ export function fetchItem(id: string): Promise<ItemDTO> {
   return fetch(`/api/items/${id}`).then((r) => handle<ItemDTO>(r));
 }
 
-export function createItem(input: {
-  name: string;
-  description?: string;
-  status?: ItemStatus;
-  photoUrl?: string | null;
-  locationId?: string | null;
-}): Promise<ItemDTO> {
+export function createItem(
+  input: ItemInput & { name: string },
+): Promise<ItemDTO> {
   return fetch("/api/items", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -79,16 +100,7 @@ export function createItem(input: {
   }).then((r) => handle<ItemDTO>(r));
 }
 
-export function updateItem(
-  id: string,
-  input: Partial<{
-    name: string;
-    description: string | null;
-    status: ItemStatus;
-    photoUrl: string | null;
-    locationId: string | null;
-  }>,
-): Promise<ItemDTO> {
+export function updateItem(id: string, input: ItemInput): Promise<ItemDTO> {
   return fetch(`/api/items/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },

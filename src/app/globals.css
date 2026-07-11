@@ -1,43 +1,224 @@
 @import "tailwindcss";
 
 /*
- * Base theme. Intentionally minimal — this is the functional foundation.
- * A dedicated styling pass will layer the real visual design on top.
+ * Wedding Placement Planner — design system.
+ *
+ * An editorial, wedding-stationery aesthetic: warm ivory paper, ink text,
+ * an antique-gold accent, and a serif display face paired with a clean sans.
+ * Component classes below (.btn, .card, .input, .chip, …) are the shared
+ * vocabulary every screen uses so the whole app reads as one system.
  */
 
 :root {
-  --background: #f7f6f3;
-  --foreground: #1f2430;
-  --card: #ffffff;
-  --border: #e6e3dc;
-  --muted: #6b7280;
-  --accent: #8a6d5b;
+  /* Surfaces */
+  --background: #f6f2ea; /* warm ivory paper */
+  --surface: #fffdf9; /* raised card */
+  --surface-2: #f1ebe0; /* sunken / hover wells */
+  --foreground: #2a2622; /* ink */
+  --muted: #8a8178; /* soft taupe text */
+  --border: #e6ddcf; /* hairline */
+  --border-strong: #d8ccb8;
+
+  /* Accents */
+  --accent: #a9834e; /* antique gold */
+  --accent-hover: #916e3e;
+  --accent-soft: #f0e6d4; /* gold wash */
+  --on-accent: #fffdf9;
+  --rose: #b98a8a;
+  --sage: #8a9a7b;
+  --ink-blue: #5f7488;
+
+  /* Status */
+  --needed: #b8823a; /* amber */
+  --purchased: #5f7488; /* slate blue */
+  --ready: #6f8f6a; /* garden green */
+  --danger: #b4534b;
+
+  /* Effects */
+  --ring: color-mix(in srgb, var(--accent) 45%, transparent);
+  --shadow-sm: 0 1px 2px rgba(51, 41, 28, 0.05);
+  --shadow-md: 0 6px 20px -8px rgba(51, 41, 28, 0.18);
+  --shadow-lg: 0 18px 48px -18px rgba(51, 41, 28, 0.28);
+  --radius: 0.85rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #14161c;
-    --foreground: #e8eaf0;
-    --card: #1c2028;
-    --border: #2b303b;
-    --muted: #9aa2b1;
-    --accent: #c2a68f;
+    --background: #17150f;
+    --surface: #201d16;
+    --surface-2: #2a261d;
+    --foreground: #efe9dd;
+    --muted: #a79d8d;
+    --border: #322d22;
+    --border-strong: #423b2c;
+
+    --accent: #d8b078;
+    --accent-hover: #e6c390;
+    --accent-soft: #33291b;
+    --on-accent: #1a160f;
+    --rose: #cfa1a1;
+    --sage: #a6b795;
+    --ink-blue: #90a6bb;
+
+    --needed: #d6a659;
+    --purchased: #90a6bb;
+    --ready: #93b58c;
+    --danger: #e0857c;
+
+    --ring: color-mix(in srgb, var(--accent) 40%, transparent);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 24px -10px rgba(0, 0, 0, 0.55);
+    --shadow-lg: 0 20px 50px -18px rgba(0, 0, 0, 0.6);
   }
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-border: var(--border);
   --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-accent: var(--accent);
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-rose: var(--rose);
+  --color-sage: var(--sage);
+  --color-ink-blue: var(--ink-blue);
+  --color-needed: var(--needed);
+  --color-purchased: var(--purchased);
+  --color-ready: var(--ready);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: var(--font-cormorant), "Iowan Old Style", "Palatino Linotype",
+    Palatino, Georgia, serif;
+
+  --radius-xl: var(--radius);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Serif display headings. Apply `.font-display` for the editorial look. */
+.font-display {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+}
+
+/* Small all-caps eyebrow label. */
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+@layer components {
+  /* --- Buttons --- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2
+      text-sm font-medium transition-colors select-none cursor-pointer
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--foreground);
+    border: 1px solid var(--border-strong);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--border-strong);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--danger) 12%, transparent);
+  }
+  .btn-sm {
+    @apply px-2.5 py-1 text-xs;
+  }
+
+  /* --- Cards --- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+  .card-hover {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .card-hover:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  /* --- Form controls --- */
+  .label {
+    @apply block text-sm font-medium mb-1.5;
+  }
+  .input {
+    @apply w-full rounded-lg px-3 py-2 text-sm outline-none transition;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--foreground);
+  }
+  .input::placeholder {
+    color: var(--muted);
+  }
+  .input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+
+  /* --- Chips / badges --- */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5
+      text-xs font-medium;
+    background: var(--surface-2);
+    color: var(--muted);
+  }
+  .dot {
+    @apply inline-block h-1.5 w-1.5 rounded-full;
+  }
+
+  /* --- Progress meter --- */
+  .meter {
+    @apply relative h-2 w-full overflow-hidden rounded-full;
+    background: var(--surface-2);
+  }
+  .meter > span {
+    @apply absolute inset-y-0 left-0 rounded-full;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+}
+
+/* Respect users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }
