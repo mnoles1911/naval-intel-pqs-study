@@ -1,10 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { ItemDTO, LocationDTO } from "@/lib/types";
+import type {
+  ItemDTO,
+  LocationDTO,
+  PartyDTO,
+  PersonDTO,
+  SeatAssignmentDTO,
+} from "@/lib/types";
 import {
   fetchItems,
   fetchLocations,
+  fetchParties,
+  fetchPeople,
+  fetchPlan,
+  fetchPlans,
   updateItem,
   updateLocation,
 } from "@/lib/client";
@@ -17,6 +27,9 @@ type View = "board" | "map";
 export default function PlanPage() {
   const [locations, setLocations] = useState<LocationDTO[]>([]);
   const [items, setItems] = useState<ItemDTO[]>([]);
+  const [people, setPeople] = useState<PersonDTO[]>([]);
+  const [parties, setParties] = useState<PartyDTO[]>([]);
+  const [assignments, setAssignments] = useState<SeatAssignmentDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -26,10 +39,26 @@ export default function PlanPage() {
     let active = true;
     (async () => {
       try {
-        const [locs, its] = await Promise.all([fetchLocations(), fetchItems()]);
+        const [locs, its, ppl, pts, plans] = await Promise.all([
+          fetchLocations(),
+          fetchItems(),
+          fetchPeople(),
+          fetchParties(),
+          fetchPlans(),
+        ]);
         if (!active) return;
         setLocations(locs);
         setItems(its);
+        setPeople(ppl);
+        setParties(pts);
+
+        // Load the active plan's seat assignments (fall back to the first).
+        const activePlan = plans.find((p) => p.isActive) ?? plans[0];
+        if (activePlan) {
+          const { assignments: seats } = await fetchPlan(activePlan.id);
+          if (!active) return;
+          setAssignments(seats);
+        }
       } catch (err) {
         if (!active) return;
         setLoadError(
@@ -112,6 +141,79 @@ export default function PlanPage() {
     [locations],
   );
 
+  // Persist a location's map footprint. Optimistic with per-field revert.
+  const resizeLocation = useCallback(
+    async (id: string, planW: number, planH: number) => {
+      const loc = locations.find((l) => l.id === id);
+      if (!loc) return;
+      const prevW = loc.planW;
+      const prevH = loc.planH;
+
+      setActionError(null);
+      setLocations((cur) =>
+        cur.map((l) => (l.id === id ? { ...l, planW, planH } : l)),
+      );
+
+      try {
+        const updated = await updateLocation(id, { planW, planH });
+        setLocations((cur) => cur.map((l) => (l.id === id ? updated : l)));
+      } catch (err) {
+        setLocations((cur) =>
+          cur.map((l) =>
+            l.id === id ? { ...l, planW: prevW, planH: prevH } : l,
+          ),
+        );
+        setActionError(
+          err instanceof Error
+            ? `Couldn't resize "${loc.name}": ${err.message}`
+            : `Couldn't resize "${loc.name}".`,
+        );
+      }
+    },
+    [locations],
+  );
+
+  // Place/move an item on the map, optionally (re)assigning it to a table.
+  // Optimistic, reverting the touched fields on failure.
+  const placeItem = useCallback(
+    async (
+      id: string,
+      planX: number,
+      planY: number,
+      locationId?: string,
+    ) => {
+      const item = items.find((it) => it.id === id);
+      if (!item) return;
+      const prev = {
+        planX: item.planX,
+        planY: item.planY,
+        locationId: item.locationId,
+      };
+      const patch =
+        locationId !== undefined
+          ? { planX, planY, locationId }
+          : { planX, planY };
+
+      setActionError(null);
+      setItems((cur) =>
+        cur.map((it) => (it.id === id ? { ...it, ...patch } : it)),
+      );
+
+      try {
+        const updated = await updateItem(id, patch);
+        setItems((cur) => cur.map((it) => (it.id === id ? updated : it)));
+      } catch (err) {
+        setItems((cur) => cur.map((it) => (it.id === id ? { ...it, ...prev } : it)));
+        setActionError(
+          err instanceof Error
+            ? `Couldn't place "${item.name}": ${err.message}`
+            : `Couldn't place "${item.name}".`,
+        );
+      }
+    },
+    [items],
+  );
+
   const isEmpty = locations.length === 0 && items.length === 0;
 
   return (
@@ -187,7 +289,12 @@ export default function PlanPage() {
         <MapView
           locations={locations}
           items={items}
+          people={people}
+          parties={parties}
+          assignments={assignments}
           onMoveLocation={moveLocation}
+          onResizeLocation={resizeLocation}
+          onPlaceItem={placeItem}
         />
       )}
     </div>

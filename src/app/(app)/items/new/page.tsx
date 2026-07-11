@@ -111,7 +111,7 @@ export default function NewItemPage() {
   const [vendorName, setVendorName] = useState("");
   const [vendorUrl, setVendorUrl] = useState("");
   const [notes, setNotes] = useState("");
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
 
   // Bulk textarea.
   const [bulkText, setBulkText] = useState("");
@@ -240,7 +240,7 @@ export default function NewItemPage() {
       base.vendorName = vendorName.trim() || null;
       base.vendorUrl = vendorUrl.trim() || null;
       base.notes = notes.trim() || null;
-      base.photoUrl = photoUrl;
+      base.photoUrls = photoUrls;
     }
 
     // Cross-product of names × target locations.
@@ -439,7 +439,7 @@ export default function NewItemPage() {
               </Field>
 
               <Field label="Photo">
-                <PhotoUpload value={photoUrl} onChange={setPhotoUrl} />
+                <PhotoUpload value={photoUrls} onChange={setPhotoUrls} />
               </Field>
             </>
           )}

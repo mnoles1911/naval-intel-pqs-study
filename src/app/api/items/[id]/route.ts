@@ -29,6 +29,20 @@ function str(value: unknown): string | null {
     : null;
 }
 
+function photoList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (v): v is string => typeof v === "string" && v.trim().length > 0,
+  );
+}
+
+function toFrac(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.min(1, Math.max(0, n));
+}
+
 // PATCH /api/items/:id — partial update. Any subset of fields may be sent.
 // Set locationId to the UNASSIGNED sentinel (or null) to unassign.
 export async function PATCH(request: Request, { params }: Params) {
@@ -54,6 +68,9 @@ export async function PATCH(request: Request, { params }: Params) {
     vendorUrl,
     notes,
     photoUrl,
+    photoUrls,
+    planX,
+    planY,
     locationId,
   } = (body ?? {}) as Record<string, unknown>;
   const data: Record<string, unknown> = {};
@@ -96,10 +113,18 @@ export async function PATCH(request: Request, { params }: Params) {
   if (vendorName !== undefined) data.vendorName = str(vendorName);
   if (vendorUrl !== undefined) data.vendorUrl = str(vendorUrl);
   if (notes !== undefined) data.notes = str(notes);
-  if (photoUrl !== undefined) {
+  // Photos: when the gallery is provided it wins and the cover is kept in sync
+  // with its first entry; otherwise a bare photoUrl can still be set.
+  if (photoUrls !== undefined) {
+    const gallery = photoList(photoUrls);
+    data.photoUrls = gallery;
+    data.photoUrl = gallery[0] ?? null;
+  } else if (photoUrl !== undefined) {
     data.photoUrl =
       typeof photoUrl === "string" && photoUrl.length > 0 ? photoUrl : null;
   }
+  if (planX !== undefined) data.planX = toFrac(planX);
+  if (planY !== undefined) data.planY = toFrac(planY);
   if (locationId !== undefined) {
     if (locationId === null || locationId === UNASSIGNED || locationId === "") {
       data.locationId = null;

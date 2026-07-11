@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TABLE_SHAPE_LABELS } from "@/lib/constants";
+import { TABLE_SHAPE_LABELS, UNASSIGNED } from "@/lib/constants";
 import type { LocationDTO, PartyDTO, PersonDTO } from "@/lib/types";
 import {
   GUEST_MIME,
@@ -11,6 +11,7 @@ import {
   roundSeatPositions,
 } from "./seatingUtils";
 import GuestPuck from "./GuestPuck";
+import { useTouchDrag } from "@/lib/useTouchDrag";
 
 interface Props {
   table: LocationDTO;
@@ -37,6 +38,26 @@ export default function TableCard({
 }: Props) {
   const [hoverSeat, setHoverSeat] = useState<number | null>(null);
   const [hoverBody, setHoverBody] = useState(false);
+
+  // Touch path for occupied seats (drag source). dropId encodes the target the
+  // same way the HTML5 drops resolve it: UNASSIGNED, a table id (whole party /
+  // next free seat), or `${tableId}:${seatIndex}` for a specific seat.
+  const bindTouchDrag = useTouchDrag({
+    onDrop: (personId, dropId) => {
+      if (dropId === UNASSIGNED) {
+        onUnseat(personId);
+        return;
+      }
+      const [locationId, seat] = dropId.split(":");
+      if (seat !== undefined) {
+        onSeat(personId, locationId, Number(seat));
+        return;
+      }
+      const person = peopleById.get(personId);
+      if (person?.partyId) onSeatParty(personId, locationId);
+      else onSeat(personId, locationId);
+    },
+  });
 
   const isRound = table.shape === "ROUND";
   const positions = isRound
@@ -97,6 +118,8 @@ export default function TableCard({
           if (e.currentTarget === e.target) setHoverBody(false);
         }}
         onDrop={handleBodyDrop}
+        // Touch body-drop target: seats the whole party (or next free seat).
+        data-drop-id={table.id}
       >
         {/* The tabletop */}
         <div
@@ -122,6 +145,10 @@ export default function TableCard({
             <div
               key={seatIndex}
               draggable={!!guest}
+              // Touch-drop target for this exact seat.
+              data-drop-id={`${table.id}:${seatIndex}`}
+              // Touch drag source when occupied (mirrors the HTML5 source).
+              {...(guest ? bindTouchDrag(guest.id) : {})}
               onDragStart={(e) => {
                 if (!guest) return;
                 e.dataTransfer.setData(GUEST_MIME, guest.id);
@@ -146,7 +173,7 @@ export default function TableCard({
                   ? `Seat ${seatIndex + 1}: ${guest.name}${separated ? " (party split)" : ""}`
                   : `Empty seat ${seatIndex + 1}`
               }
-              className={`absolute flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border text-[0.65rem] font-semibold transition ${
+              className={`absolute flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 touch-none items-center justify-center rounded-full border text-[0.65rem] font-semibold transition ${
                 guest
                   ? "cursor-grab active:cursor-grabbing"
                   : "border-dashed border-border-strong bg-surface"
@@ -201,7 +228,8 @@ export default function TableCard({
               tables={tables}
               warning={warnings.get(guest.id)}
               seatedAt={table.id}
-              onSeat={(personId, locationId) => onSeat(personId, locationId)}
+              onSeat={onSeat}
+              onSeatParty={onSeatParty}
               onUnseat={onUnseat}
             />
           ))}

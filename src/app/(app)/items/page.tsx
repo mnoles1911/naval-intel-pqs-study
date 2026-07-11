@@ -6,6 +6,7 @@ import type { ItemDTO, LocationDTO } from "@/lib/types";
 import { fetchItems, fetchLocations } from "@/lib/client";
 import ItemsTable from "@/components/items/ItemsTable";
 import ItemImportPanel from "@/components/items/ItemImportPanel";
+import QuantityRollup from "@/components/items/QuantityRollup";
 
 export default function ItemsPage() {
   const [items, setItems] = useState<ItemDTO[]>([]);
@@ -73,6 +74,7 @@ export default function ItemsPage() {
         </p>
       ) : (
         <>
+          <QuantityRollup items={items} locations={locations} />
           <ItemsTable
             items={items}
             locations={locations}
