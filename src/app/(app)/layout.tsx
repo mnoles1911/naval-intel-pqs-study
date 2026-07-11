@@ -4,6 +4,14 @@ import { isAuthenticated } from "@/lib/auth";
 import LogoutButton from "@/components/LogoutButton";
 import NavLink from "@/components/NavLink";
 import ThemeToggle from "@/components/ThemeToggle";
+import {
+  DashboardIcon,
+  ItemsIcon,
+  LocationsIcon,
+  FloorPlanIcon,
+  SeatingIcon,
+  SetupIcon,
+} from "@/components/icons";
 
 export default async function AppLayout({
   children,
@@ -31,12 +39,24 @@ export default async function AppLayout({
             </span>
           </Link>
           <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-4">
-            <NavLink href="/">Dashboard</NavLink>
-            <NavLink href="/items">Items</NavLink>
-            <NavLink href="/locations">Locations</NavLink>
-            <NavLink href="/plan">Floor plan</NavLink>
-            <NavLink href="/seating">Seating</NavLink>
-            <NavLink href="/setup">Setup sheets</NavLink>
+            <NavLink href="/" icon={<DashboardIcon size={16} />}>
+              Dashboard
+            </NavLink>
+            <NavLink href="/items" icon={<ItemsIcon size={16} />}>
+              Items
+            </NavLink>
+            <NavLink href="/locations" icon={<LocationsIcon size={16} />}>
+              Locations
+            </NavLink>
+            <NavLink href="/plan" icon={<FloorPlanIcon size={16} />}>
+              Floor plan
+            </NavLink>
+            <NavLink href="/seating" icon={<SeatingIcon size={16} />}>
+              Seating
+            </NavLink>
+            <NavLink href="/setup" icon={<SetupIcon size={16} />}>
+              Setup sheets
+            </NavLink>
             <span className="mx-1 hidden h-5 w-px bg-border sm:block" />
             <ThemeToggle />
             <LogoutButton />
