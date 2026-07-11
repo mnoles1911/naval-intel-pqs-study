@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { isTableShape } from "@/lib/constants";
 
 function str(value: unknown): string | null {
@@ -91,5 +92,11 @@ export async function POST(request: Request) {
   }
 
   const result = await prisma.location.createMany({ data });
+  await logAudit({
+    action: "create",
+    entity: "location",
+    entityId: null,
+    summary: `Bulk-added ${result.count} tables`,
+  });
   return NextResponse.json({ count: result.count }, { status: 201 });
 }

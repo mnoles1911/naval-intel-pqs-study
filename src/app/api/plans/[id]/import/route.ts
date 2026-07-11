@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { SeatError, seatAtExactSeat, seatAtNextFree } from "@/lib/seatOps";
 
 export const runtime = "nodejs";
@@ -178,6 +179,13 @@ export async function POST(request: Request, { params }: Params) {
       }
     }
   }
+
+  await logAudit({
+    action: "import",
+    entity: "person",
+    entityId: planId,
+    summary: `Imported ${imported} guests from CSV (${createdGuests} new, ${createdParties} parties)`,
+  });
 
   return NextResponse.json({ imported, createdGuests, createdParties, skipped });
 }

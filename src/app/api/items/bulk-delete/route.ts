@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 
 // POST /api/items/bulk-delete — delete many items. Body: { ids: string[] }
 export async function POST(request: Request) {
@@ -25,6 +26,12 @@ export async function POST(request: Request) {
 
   const result = await prisma.item.deleteMany({
     where: { id: { in: itemIds } },
+  });
+  await logAudit({
+    action: "delete",
+    entity: "item",
+    entityId: null,
+    summary: `Deleted ${result.count} items`,
   });
   return NextResponse.json({ count: result.count });
 }

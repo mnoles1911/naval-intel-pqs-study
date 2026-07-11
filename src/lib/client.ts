@@ -8,6 +8,7 @@ import type {
   PersonDTO,
   SeatingPlanDTO,
   SeatAssignmentDTO,
+  AuditLogDTO,
 } from "@/lib/types";
 import type {
   ItemStatus,
@@ -22,6 +23,23 @@ async function handle<T>(res: Response): Promise<T> {
     throw new Error(data.error ?? `Request failed (${res.status})`);
   }
   return res.json() as Promise<T>;
+}
+
+// --- Audit trail ---
+
+export function fetchAudit(opts?: {
+  actor?: string;
+  entity?: string;
+  limit?: number;
+}): Promise<AuditLogDTO[]> {
+  const params = new URLSearchParams();
+  if (opts?.actor) params.set("actor", opts.actor);
+  if (opts?.entity) params.set("entity", opts.entity);
+  if (opts?.limit) params.set("limit", String(opts.limit));
+  const qs = params.toString();
+  return fetch(`/api/audit${qs ? `?${qs}` : ""}`).then((r) =>
+    handle<AuditLogDTO[]>(r),
+  );
 }
 
 // --- Locations ---

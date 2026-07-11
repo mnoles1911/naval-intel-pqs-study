@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { UNASSIGNED } from "@/lib/constants";
 
 type Params = { params: Promise<{ id: string }> };
@@ -66,6 +67,12 @@ export async function PATCH(request: Request, { params }: Params) {
     // Clean up a party that has been emptied (or left with a single member) by
     // this change, so stale one-person parties don't linger.
     if (partyId !== undefined) await pruneEmptyParties();
+    await logAudit({
+      action: "update",
+      entity: "person",
+      entityId: person.id,
+      summary: `Updated guest "${person.name}"`,
+    });
     return NextResponse.json(person);
   } catch {
     return NextResponse.json({ error: "Person not found" }, { status: 404 });
@@ -79,8 +86,17 @@ export async function DELETE(_request: Request, { params }: Params) {
 
   const { id } = await params;
   try {
+    const existing = await prisma.person.findUnique({ where: { id } });
     await prisma.person.delete({ where: { id } });
     await pruneEmptyParties();
+    await logAudit({
+      action: "delete",
+      entity: "person",
+      entityId: id,
+      summary: existing
+        ? `Deleted guest "${existing.name}"`
+        : `Deleted guest ${id}`,
+    });
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Person not found" }, { status: 404 });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { SeatError, seatAtNextFree } from "@/lib/seatOps";
 
 type Params = { params: Promise<{ id: string }> };
@@ -64,5 +65,11 @@ export async function POST(request: Request, { params }: Params) {
   }
 
   const assignments = await prisma.seatAssignment.findMany({ where: { planId } });
+  await logAudit({
+    action: "assign",
+    entity: "seat",
+    entityId: null,
+    summary: `Seated "${person.name}"'s party at "${location.name}"`,
+  });
   return NextResponse.json({ assignments, seated, skipped });
 }

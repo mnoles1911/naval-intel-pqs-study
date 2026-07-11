@@ -4,21 +4,30 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 
+const ACCOUNTS = ["matt", "emma"] as const;
+
 export default function LoginPage() {
   const router = useRouter();
+  const [username, setUsername] = useState<(typeof ACCOUNTS)[number] | null>(
+    null,
+  );
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!username) {
+      setError("Choose who you are first.");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
       });
       if (res.ok) {
         router.replace("/");
@@ -50,6 +59,25 @@ export default function LoginPage() {
           </p>
         </div>
         <form onSubmit={handleSubmit} className="card p-6">
+          <span className="label">Who&rsquo;s this?</span>
+          <div className="mb-4 grid grid-cols-2 gap-2">
+            {ACCOUNTS.map((who) => {
+              const selected = username === who;
+              return (
+                <button
+                  key={who}
+                  type="button"
+                  onClick={() => setUsername(who)}
+                  aria-pressed={selected}
+                  className={`btn capitalize ${
+                    selected ? "btn-primary" : "btn-ghost"
+                  }`}
+                >
+                  {who}
+                </button>
+              );
+            })}
+          </div>
           <label htmlFor="password" className="label">
             Password
           </label>
@@ -69,7 +97,7 @@ export default function LoginPage() {
           )}
           <button
             type="submit"
-            disabled={loading || password.length === 0}
+            disabled={loading || !username || password.length === 0}
             className="btn btn-primary mt-5 w-full"
           >
             {loading ? "Signing in…" : "Sign in"}

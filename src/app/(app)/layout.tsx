@@ -10,6 +10,7 @@ import {
   FloorPlanIcon,
   SeatingIcon,
   SetupIcon,
+  HistoryIcon,
 } from "@/components/icons";
 
 export default async function AppLayout({
@@ -52,6 +53,9 @@ export default async function AppLayout({
             </NavLink>
             <NavLink href="/setup" icon={<SetupIcon size={16} />}>
               Setup sheets
+            </NavLink>
+            <NavLink href="/history" icon={<HistoryIcon size={16} />}>
+              History
             </NavLink>
             <span className="mx-1 hidden h-5 w-px bg-border sm:block" />
             <ThemeToggle />

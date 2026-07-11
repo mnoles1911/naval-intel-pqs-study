@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import {
   isItemStatus,
   isItemCategory,
@@ -139,6 +140,12 @@ export async function POST(request: Request) {
       planY: toFrac(planY),
       locationId: resolvedLocationId,
     },
+  });
+  await logAudit({
+    action: "create",
+    entity: "item",
+    entityId: item.id,
+    summary: `Added item "${item.name}"`,
   });
   return NextResponse.json(item, { status: 201 });
 }

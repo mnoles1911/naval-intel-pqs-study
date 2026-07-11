@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { isTableShape } from "@/lib/constants";
 
 // GET /api/locations — list all locations (by manual order, then name).
@@ -101,6 +102,12 @@ export async function POST(request: Request) {
       shape: isTableShape(shape) ? shape : "ROUND",
       seatCount: seats ?? 8,
     },
+  });
+  await logAudit({
+    action: "create",
+    entity: "location",
+    entityId: location.id,
+    summary: `Added location "${location.name}"`,
   });
   return NextResponse.json(location, { status: 201 });
 }

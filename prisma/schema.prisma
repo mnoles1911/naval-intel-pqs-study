@@ -46,6 +46,29 @@ model Location {
   updatedAt   DateTime @updatedAt
 }
 
+// Append-only audit trail: who (actor: "matt" / "emma") changed what, when.
+// Written by every mutating API route; read by the History tab. Never updated
+// or deleted in normal use.
+model AuditLog {
+  id        String   @id @default(cuid())
+  // Which account made the change ("matt" or "emma").
+  actor     String
+  // What kind of change: create / update / delete / import / assign /
+  // unassign / login.
+  action    String
+  // What was changed: item / location / person / party / plan / seat / session.
+  entity    String
+  // The affected record's id, when there is a single one.
+  entityId  String?
+  // Human-readable one-line description shown in the History tab.
+  summary   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([actor])
+  @@index([entity])
+}
+
 // A group of guests who must be seated together (a couple, a family, a
 // friend group). Linking two people puts them in the same Party; the seating
 // chart flags a Party whose members are split across different tables.

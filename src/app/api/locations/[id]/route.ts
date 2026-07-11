@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { isTableShape } from "@/lib/constants";
 
 type Params = { params: Promise<{ id: string }> };
@@ -110,6 +111,12 @@ export async function PATCH(request: Request, { params }: Params) {
 
   try {
     const location = await prisma.location.update({ where: { id }, data });
+    await logAudit({
+      action: "update",
+      entity: "location",
+      entityId: location.id,
+      summary: `Updated location "${location.name}"`,
+    });
     return NextResponse.json(location);
   } catch {
     return NextResponse.json({ error: "Location not found" }, { status: 404 });
@@ -124,7 +131,16 @@ export async function DELETE(_request: Request, { params }: Params) {
 
   const { id } = await params;
   try {
+    const existing = await prisma.location.findUnique({ where: { id } });
     await prisma.location.delete({ where: { id } });
+    await logAudit({
+      action: "delete",
+      entity: "location",
+      entityId: id,
+      summary: existing
+        ? `Deleted location "${existing.name}"`
+        : `Deleted location ${id}`,
+    });
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Location not found" }, { status: 404 });
