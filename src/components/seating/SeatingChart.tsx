@@ -79,7 +79,7 @@ export default function SeatingChart({
 
       {/* Tables grid */}
       {tables.length === 0 ? (
-        <div className="card p-8 text-center text-muted">
+        <div className="toile-veil card p-8 text-center text-muted">
           No tables yet. Add a table to start seating guests.
         </div>
       ) : (

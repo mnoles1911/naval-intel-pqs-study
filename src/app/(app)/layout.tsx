@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth";
 import LogoutButton from "@/components/LogoutButton";
 import NavLink from "@/components/NavLink";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default async function AppLayout({
   children,
@@ -37,6 +38,7 @@ export default async function AppLayout({
             <NavLink href="/seating">Seating</NavLink>
             <NavLink href="/setup">Setup sheets</NavLink>
             <span className="mx-1 hidden h-5 w-px bg-border sm:block" />
+            <ThemeToggle />
             <LogoutButton />
           </nav>
         </div>

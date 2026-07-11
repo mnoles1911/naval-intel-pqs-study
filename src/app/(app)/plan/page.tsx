@@ -272,7 +272,7 @@ export default function PlanPage() {
           <p className="text-sm text-danger">{loadError}</p>
         </div>
       ) : isEmpty ? (
-        <div className="card p-10 text-center">
+        <div className="toile-veil card p-10 text-center">
           <h2 className="font-display text-lg">Nothing to place yet</h2>
           <p className="mx-auto mt-1 max-w-sm text-sm text-muted">
             Add some locations and items first — then you can drag them into

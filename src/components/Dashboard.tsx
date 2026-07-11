@@ -150,7 +150,7 @@ export default function Dashboard() {
       ) : null}
 
       {noItemsAtAll ? (
-        <div className="card mt-10 p-10 text-center">
+        <div className="toile-veil card mt-10 p-10 text-center">
           <h2 className="font-display text-2xl">Nothing here yet</h2>
           <p className="mt-2 text-muted">
             Start by adding an item, then place it at a location.
