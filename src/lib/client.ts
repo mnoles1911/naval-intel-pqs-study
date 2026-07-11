@@ -126,6 +126,31 @@ export function deleteItem(id: string): Promise<void> {
   );
 }
 
+// Create many items at once — used for bulk entry and for duplicating one item
+// across several locations. Returns how many were created.
+export function bulkCreateItems(
+  items: (ItemInput & { name: string })[],
+): Promise<{ count: number }> {
+  return fetch("/api/items/bulk", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items }),
+  }).then((r) => handle<{ count: number }>(r));
+}
+
+export interface ItemImportResult {
+  imported: number;
+  skipped: { row: number; reason: string }[];
+}
+
+// Import items from a CSV file (adds to the existing list).
+export async function importItemsCsv(file: File): Promise<ItemImportResult> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch("/api/items/import", { method: "POST", body: form });
+  return handle<ItemImportResult>(res);
+}
+
 // --- People & seating ---
 
 export interface PersonInput {
