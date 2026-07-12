@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { LocationDTO, PartyDTO, PersonDTO } from "@/lib/types";
+import { RSVP_STATUS_LABELS, isRsvpStatus, type RsvpStatus } from "@/lib/constants";
 import { GUEST_MIME } from "./seatingUtils";
 import TableCard from "./TableCard";
 import GuestPuck from "./GuestPuck";
@@ -26,6 +27,15 @@ const SCOPES: { value: GuestScope; label: string }[] = [
   { value: "all", label: "All" },
 ];
 
+type RsvpFilter = "all" | RsvpStatus;
+
+const RSVP_FILTERS: { value: RsvpFilter; label: string }[] = [
+  { value: "all", label: "All RSVPs" },
+  { value: "ATTENDING", label: RSVP_STATUS_LABELS.ATTENDING },
+  { value: "DECLINED", label: RSVP_STATUS_LABELS.DECLINED },
+  { value: "PENDING", label: RSVP_STATUS_LABELS.PENDING },
+];
+
 export default function SeatingChart({
   tables,
   people,
@@ -41,6 +51,7 @@ export default function SeatingChart({
   // --- Filters (chart view only) --------------------------------------------
   const [guestQuery, setGuestQuery] = useState("");
   const [guestScope, setGuestScope] = useState<GuestScope>("unseated");
+  const [rsvpFilter, setRsvpFilter] = useState<RsvpFilter>("all");
   const [tableQuery, setTableQuery] = useState("");
 
   const peopleById = useMemo(() => {
@@ -89,7 +100,7 @@ export default function SeatingChart({
     return tables.filter((t) => t.name.toLowerCase().includes(q));
   }, [tables, tableQuery]);
 
-  // Guests shown in the tray, narrowed by scope + name search.
+  // Guests shown in the tray, narrowed by scope + RSVP status + name search.
   const trayGuests = useMemo(() => {
     const q = guestQuery.trim().toLowerCase();
     return people
@@ -97,10 +108,28 @@ export default function SeatingChart({
         const seated = seatOf.has(p.id);
         if (guestScope === "unseated" && seated) return false;
         if (guestScope === "seated" && !seated) return false;
+        if (rsvpFilter !== "all") {
+          const status = isRsvpStatus(p.rsvpStatus) ? p.rsvpStatus : "PENDING";
+          if (status !== rsvpFilter) return false;
+        }
         return !q || p.name.toLowerCase().includes(q);
       })
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [people, seatOf, guestScope, guestQuery]);
+  }, [people, seatOf, guestScope, rsvpFilter, guestQuery]);
+
+  // RSVP tallies across the whole guest list (independent of the active filter).
+  const rsvpCounts = useMemo(() => {
+    let attending = 0;
+    let declined = 0;
+    let pending = 0;
+    for (const p of people) {
+      const status = isRsvpStatus(p.rsvpStatus) ? p.rsvpStatus : "PENDING";
+      if (status === "ATTENDING") attending += 1;
+      else if (status === "DECLINED") declined += 1;
+      else pending += 1;
+    }
+    return { attending, declined, pending };
+  }, [people]);
 
   function handleTrayDrop(e: React.DragEvent) {
     e.preventDefault();
@@ -117,8 +146,9 @@ export default function SeatingChart({
       </div>
 
       {/* Filter bar */}
+      <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        {/* Guest filter: name search + scope segmented control */}
+        {/* Guest filter: name search + scope segmented control + RSVP select */}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative sm:w-60">
             <SearchIcon
@@ -165,6 +195,19 @@ export default function SeatingChart({
               </button>
             ))}
           </div>
+
+          <select
+            value={rsvpFilter}
+            onChange={(e) => setRsvpFilter(e.target.value as RsvpFilter)}
+            className="input w-auto sm:w-40"
+            aria-label="Filter guests by RSVP status"
+          >
+            {RSVP_FILTERS.map((f) => (
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Table filter: name search */}
@@ -191,6 +234,15 @@ export default function SeatingChart({
             </button>
           )}
         </div>
+      </div>
+
+      {/* RSVP summary across the whole guest list */}
+      {people.length > 0 && (
+        <p className="text-sm text-muted" role="status">
+          {rsvpCounts.attending} attending · {rsvpCounts.declined} declined ·{" "}
+          {rsvpCounts.pending} no response
+        </p>
+      )}
       </div>
 
       {/* Tables grid */}

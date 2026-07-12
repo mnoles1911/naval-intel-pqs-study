@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiAuth } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
-import { UNASSIGNED } from "@/lib/constants";
+import { UNASSIGNED, isRsvpStatus } from "@/lib/constants";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -39,7 +39,8 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { name, notes, partyId } = (body ?? {}) as Record<string, unknown>;
+  const { name, notes, partyId, rsvpStatus, mealChoice, dietaryNotes } =
+    (body ?? {}) as Record<string, unknown>;
   const data: Record<string, unknown> = {};
 
   if (name !== undefined) {
@@ -49,6 +50,17 @@ export async function PATCH(request: Request, { params }: Params) {
     data.name = name.trim();
   }
   if (notes !== undefined) data.notes = str(notes);
+  if (rsvpStatus !== undefined) {
+    if (!isRsvpStatus(rsvpStatus)) {
+      return NextResponse.json(
+        { error: "Invalid RSVP status" },
+        { status: 400 },
+      );
+    }
+    data.rsvpStatus = rsvpStatus;
+  }
+  if (mealChoice !== undefined) data.mealChoice = str(mealChoice);
+  if (dietaryNotes !== undefined) data.dietaryNotes = str(dietaryNotes);
 
   if (partyId !== undefined) {
     if (partyId === null || partyId === "" || partyId === UNASSIGNED) {

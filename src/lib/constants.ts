@@ -26,6 +26,59 @@ export function isItemStatus(value: unknown): value is ItemStatus {
   return typeof value === "string" && ITEM_STATUSES.includes(value as ItemStatus);
 }
 
+// --- RSVP --------------------------------------------------------------------
+// A guest's response, synced from Zola. PENDING = no response yet.
+export const RSVP_STATUSES = ["PENDING", "ATTENDING", "DECLINED"] as const;
+export type RsvpStatus = (typeof RSVP_STATUSES)[number];
+
+export const RSVP_STATUS_LABELS: Record<RsvpStatus, string> = {
+  PENDING: "No response",
+  ATTENDING: "Attending",
+  DECLINED: "Declined",
+};
+
+// Dot color per status, reusing design-system tokens.
+export const RSVP_STATUS_COLOR: Record<RsvpStatus, string> = {
+  PENDING: "var(--muted)",
+  ATTENDING: "var(--sage)",
+  DECLINED: "var(--danger)",
+};
+
+export function isRsvpStatus(value: unknown): value is RsvpStatus {
+  return (
+    typeof value === "string" && RSVP_STATUSES.includes(value as RsvpStatus)
+  );
+}
+
+// Map a free-text response (from a Zola export cell) to a canonical status.
+// Recognises Zola's common phrasings; unknown/blank => PENDING.
+export function normalizeRsvp(raw: string): RsvpStatus {
+  const v = raw.trim().toLowerCase();
+  if (!v) return "PENDING";
+  // "No response" / "no reply" / "awaiting" / "maybe" are NOT a decline —
+  // check these before the generic "no…" => declined rule below.
+  if (
+    /(no\s*response|no\s*reply|awaiting|pending|invited|not\s*sent|^maybe)/.test(
+      v,
+    )
+  )
+    return "PENDING";
+  if (
+    /^(y|yes|attending|accepts?|accepted|coming|will attend|1|true)\b/.test(v) ||
+    (v.includes("attend") && !v.includes("not"))
+  )
+    return "ATTENDING";
+  if (
+    /^(n|no|declin|not attending|regrets?|can'?t|will not|won'?t|0|false)\b/.test(
+      v,
+    ) ||
+    v.includes("declin") ||
+    v.includes("regret")
+  )
+    return "DECLINED";
+  return "PENDING";
+}
+
 // --- Categories -------------------------------------------------------------
 export const ITEM_CATEGORIES = [
   "FLORALS",
