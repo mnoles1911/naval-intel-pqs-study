@@ -55,16 +55,27 @@ export function isRsvpStatus(value: unknown): value is RsvpStatus {
 export function normalizeRsvp(raw: string): RsvpStatus {
   const v = raw.trim().toLowerCase();
   if (!v) return "PENDING";
-  if (/^(y|yes|attending|accepts?|accepted|coming|will attend|1|true)\b/.test(v))
+  // "No response" / "no reply" / "awaiting" / "maybe" are NOT a decline —
+  // check these before the generic "no…" => declined rule below.
+  if (
+    /(no\s*response|no\s*reply|awaiting|pending|invited|not\s*sent|^maybe)/.test(
+      v,
+    )
+  )
+    return "PENDING";
+  if (
+    /^(y|yes|attending|accepts?|accepted|coming|will attend|1|true)\b/.test(v) ||
+    (v.includes("attend") && !v.includes("not"))
+  )
     return "ATTENDING";
   if (
     /^(n|no|declin|not attending|regrets?|can'?t|will not|won'?t|0|false)\b/.test(
       v,
-    )
+    ) ||
+    v.includes("declin") ||
+    v.includes("regret")
   )
     return "DECLINED";
-  if (v.includes("attend") && !v.includes("not")) return "ATTENDING";
-  if (v.includes("declin") || v.includes("regret")) return "DECLINED";
   return "PENDING";
 }
 
