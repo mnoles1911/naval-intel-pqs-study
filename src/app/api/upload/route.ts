@@ -22,6 +22,18 @@ const EXT: Record<string, string> = {
   "image/gif": "gif",
 };
 
+// Locate a Vercel Blob read-write token. The default connection names it
+// BLOB_READ_WRITE_TOKEN, but a store with a custom prefix (e.g. a store named
+// "photo_storage") is exposed as <PREFIX>_READ_WRITE_TOKEN. Accept either so
+// uploads work regardless of how the store was named/connected.
+function blobToken(): string | undefined {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  for (const [key, value] of Object.entries(process.env)) {
+    if (key.endsWith("_READ_WRITE_TOKEN") && value) return value;
+  }
+  return undefined;
+}
+
 // POST /api/upload — multipart form with a single "file" field.
 // Returns { url }.
 //
@@ -53,11 +65,14 @@ export async function POST(request: Request) {
 
     const filename = `${randomUUID()}.${EXT[file.type]}`;
 
-    // Cloud path: store in Vercel Blob.
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
+    // Cloud path: store in Vercel Blob. Pass the token explicitly so a custom
+    // store prefix still works.
+    const token = blobToken();
+    if (token) {
       const blob = await put(`items/${filename}`, file, {
         access: "public",
         contentType: file.type,
+        token,
       });
       return NextResponse.json({ url: blob.url });
     }
